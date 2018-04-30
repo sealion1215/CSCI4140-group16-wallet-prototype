@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">Reddcoin Wallet</string>
+    <string name="friend_tab">Friends</string>
+    <string name="setting_tab">Settings</string>
+    <string name="send_credit">Send</string>
+    <string name="recv_credit">Request</string>
+    <string name="input_credit_prompt">Input Credit(s)</string>
+    <string name="reddcoin_unit">RDD</string>
+    <string name="balance_field">Balance:</string>
+    <string name="exchange_ratio">14.265 RDD = 1 HKD</string>
+    <string name="friend_list_title">Friends:</string>
 </resources>
