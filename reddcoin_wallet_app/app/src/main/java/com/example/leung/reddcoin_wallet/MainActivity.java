@@ -24,13 +24,15 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(android.view.MenuItem item) {
+        android.content.Intent intent;
         switch (item.getItemId()) {
             case R.id.action_friend:
-                android.content.Intent intent = new android.content.Intent(this, FriendActivity.class);
+                intent = new android.content.Intent(this, FriendActivity.class);
                 startActivity(intent);
                 return true;
             case R.id.action_setting:
-
+                intent = new android.content.Intent(this, SettingActivity.class);
+                startActivity(intent);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
