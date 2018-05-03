@@ -4,6 +4,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.content.Intent;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -46,6 +47,11 @@ public class MainActivity extends AppCompatActivity {
 
     public void goRequest(View view){
         android.content.Intent intent = new android.content.Intent(this, RequestActivity.class);
+        startActivity(intent);
+    }
+
+    public void goTest(View view){
+        android.content.Intent intent = new android.content.Intent(this, NetworkActivity.class);
         startActivity(intent);
     }
 }
