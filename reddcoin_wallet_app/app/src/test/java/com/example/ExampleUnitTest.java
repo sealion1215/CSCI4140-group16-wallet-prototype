@@ -1,4 +1,4 @@
-package com.example.leung.reddcoin_wallet;
+package com.example;
 
 import org.junit.Test;
 

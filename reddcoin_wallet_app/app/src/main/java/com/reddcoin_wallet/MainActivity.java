@@ -1,12 +1,20 @@
-package com.example.leung.reddcoin_wallet;
+package com.reddcoin_wallet;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.content.Intent;
+
+import com.reddcoin_wallet.R;
+import com.reddcoin_wallet.application.WalletApplication;
+import com.reddcoin_wallet.service.CoinService;
+import com.reddcoin_wallet.service.CoinServiceImpl;
+import com.reddcoin_wallet.util.Constants;
 
 public class MainActivity extends AppCompatActivity {
+
+    private Intent connectCoinIntent;
+    private String currentAccountId = "1000";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +46,30 @@ public class MainActivity extends AppCompatActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        getWalletApplication().startBlockchainService(CoinService.ServiceMode.CANCEL_COINS_RECEIVED);
+        connectCoinService();
+        //TODO
+//        checkLowStorageAlert();
+    }
+
+    protected WalletApplication getWalletApplication() {
+        return (WalletApplication) getApplication();
+    }
+
+    private void connectCoinService() {
+        if (connectCoinIntent == null) {
+            connectCoinIntent = new Intent(CoinService.ACTION_CONNECT_COIN, null,
+                    getWalletApplication(), CoinServiceImpl.class);
+        }
+        // Open connection if needed or possible
+        connectCoinIntent.putExtra(Constants.ARG_ACCOUNT_ID, currentAccountId);
+        getWalletApplication().startService(connectCoinIntent);
     }
 
     public void goSend(View view){

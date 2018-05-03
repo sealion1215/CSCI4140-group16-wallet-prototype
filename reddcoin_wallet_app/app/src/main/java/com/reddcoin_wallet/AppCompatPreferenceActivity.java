@@ -1,4 +1,4 @@
-package com.example.leung.reddcoin_wallet;
+package com.reddcoin_wallet;
 
 import android.content.res.Configuration;
 import android.os.Bundle;

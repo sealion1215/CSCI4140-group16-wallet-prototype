@@ -1,4 +1,4 @@
-package com.example.leung.reddcoin_wallet.util;
+package com.reddcoin_wallet.util;
 
 
 import android.text.format.DateUtils;

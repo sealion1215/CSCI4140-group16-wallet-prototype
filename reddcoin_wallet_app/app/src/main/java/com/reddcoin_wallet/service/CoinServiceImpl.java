@@ -1,4 +1,4 @@
-package com.example.leung.reddcoin_wallet.service;
+package com.reddcoin_wallet.service;
 
 import android.app.NotificationManager;
 import android.app.Service;
@@ -19,8 +19,8 @@ import com.reddcoin.core.network.ServerClients;
 import com.reddcoin.core.wallet.Wallet;
 import com.reddcoin.core.wallet.WalletAccount;
 //import com.reddcoin.wallet.Configuration;
-import com.example.leung.reddcoin_wallet.util.Constants;
-import com.reddcoin.wallet.WalletApplication;
+import com.reddcoin_wallet.util.Constants;
+import com.reddcoin_wallet.application.WalletApplication;
 
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.Sha256Hash;
@@ -228,14 +228,14 @@ public class CoinServiceImpl extends Service implements CoinService {
 
         final String action = intent.getAction();
 
-        if (CoinService.ACTION_CANCEL_COINS_RECEIVED.equals(action)) {
+        if (ACTION_CANCEL_COINS_RECEIVED.equals(action)) {
             notificationCount = 0;
             notificationAccumulatedAmount = BigInteger.ZERO;
             notificationAddresses.clear();
 
             nm.cancel(NOTIFICATION_ID_COINS_RECEIVED);
 
-        } else if (CoinService.ACTION_RESET_WALLET.equals(action)) {
+        } else if (ACTION_RESET_WALLET.equals(action)) {
             if (application.getWallet() != null) {
                 Wallet wallet = application.getWallet();
                 if (intent.hasExtra(Constants.ARG_ACCOUNT_ID)) {
@@ -258,7 +258,7 @@ public class CoinServiceImpl extends Service implements CoinService {
             } else {
                 log.warn("Got wallet reset intent, but no wallet is available");
             }
-        } else if (CoinService.ACTION_CONNECT_COIN.equals(action)) {
+        } else if (ACTION_CONNECT_COIN.equals(action)) {
             if (application.getWallet() != null) {
                 Wallet wallet = application.getWallet();
                 if (intent.hasExtra(Constants.ARG_ACCOUNT_ID)) {
@@ -282,8 +282,8 @@ public class CoinServiceImpl extends Service implements CoinService {
             } else {
                 log.error("Got connect coin intent, but no wallet is available");
             }
-        } else if (CoinService.ACTION_BROADCAST_TRANSACTION.equals(action)) {
-            final Sha256Hash hash = new Sha256Hash(intent.getByteArrayExtra(CoinService.ACTION_BROADCAST_TRANSACTION_HASH));
+        } else if (ACTION_BROADCAST_TRANSACTION.equals(action)) {
+            final Sha256Hash hash = new Sha256Hash(intent.getByteArrayExtra(ACTION_BROADCAST_TRANSACTION_HASH));
             final Transaction tx = null; // FIXME
 
             if (clients != null)

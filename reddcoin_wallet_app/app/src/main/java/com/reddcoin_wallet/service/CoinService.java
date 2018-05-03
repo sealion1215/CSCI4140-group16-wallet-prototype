@@ -1,4 +1,4 @@
-package com.example.leung.reddcoin_wallet.service;
+package com.reddcoin_wallet.service;
 
 /**
  * @author John L. Jegutanis
