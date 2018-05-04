@@ -1,0 +1,105 @@
+apply plugin: 'com.android.application'
+
+android {
+    packagingOptions {
+        exclude 'LICENSE.txt'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE'
+    }
+
+    compileSdkVersion 27
+
+    defaultConfig {
+        applicationId "com.reddcoin.wallet.dev"
+        minSdkVersion 22
+        targetSdkVersion 27
+        versionCode 37
+        versionName "v1.5.14"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    sourceSets {
+        androidTest {
+            setRoot('src/test')
+        }
+    }
+}
+
+repositories {
+    flatDir {
+        dirs 'aars'
+    }
+}
+
+//sourceSets {
+//    unitTest {
+//        java.srcDir file('src/test/java')
+//        resources.srcDir file('src/test/resources')
+//    }
+//}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation fileTree(include: ['*.jar'], dir: '../core/libs')
+    // Testing
+    //    androidTestCompile 'junit:junit:4.11'
+    //    androidTestCompile 'org.robolectric:robolectric:2.3'
+    //    androidTestCompile 'com.squareup:fest-android:1.0.+'
+    implementation project(':core')
+    implementation 'com.android.support:gridlayout-v7:27.1.1'
+    implementation 'com.android.support:support-v4:27.1.1'
+    implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'com.google.guava:guava:18.0'
+    implementation 'com.google.code.findbugs:jsr305:1.3.9'
+    implementation 'com.madgag.spongycastle:core:1.51.0.0'
+    implementation 'com.google.protobuf:protobuf-java:2.5.0'
+    implementation 'com.google.zxing:core:3.1.0'
+    implementation 'ch.acra:acra:4.5.0'
+    implementation 'com.android.support:preference-v7:27.1.1'
+    //implementation 'com.android.support:support-v4-preferencefragment:1.0.0@aar'
+    //implementation 'com.android.support:preference-v14:27.1.1'
+    //implementation files('libs/slf4j-api-1.7.25.jar')
+    //implementation files('libs/okhttp-2.7.5.jar')
+    //implementation files('libs/bitcoinj-core-0.12.2-COINOMI-3.jar')
+}
+
+// dependencies {
+//     compile fileTree(dir: 'libs', include: ['*.jar'])
+//     compile fileTree(dir: '../core/libs', include: ['*.jar'])
+// // Testing
+// //    androidTestCompile 'junit:junit:4.11'
+// //    androidTestCompile 'org.robolectric:robolectric:2.3'
+// //    androidTestCompile 'com.squareup:fest-android:1.0.+'
+//     compile project(':core')
+//     compile 'com.android.support:gridlayout-v7:21.0.3'
+//     compile 'com.android.support:support-v4:21.0.3'
+//     compile 'com.android.support:appcompat-v7:21.0.3'
+//     compile 'com.google.guava:guava:18.0'
+//     compile 'com.google.code.findbugs:jsr305:1.3.9'
+//     compile 'com.madgag.spongycastle:core:1.51.0.0'
+//     compile 'com.google.protobuf:protobuf-java:2.5.0'
+//     compile 'com.google.zxing:core:3.1.0'
+//     compile 'ch.acra:acra:4.5.0'
+//     compile 'com.android.support:support-v4-preferencefragment:1.0.0@aar'
+// }
+
+//apply plugin: 'robolectric'
+
+//robolectric {
+//    include '**/*Test.class'
+//    exclude '**/espresso/**/*.class'
+//}
+
+//apply plugin: 'idea'
+
+//idea {
+//    module {
+//        testOutputDir = file('build/test-classes/debug')
+//    }
+//}
