@@ -288,4 +288,9 @@
     <string name="about_shapeshift_title">About ShapeShift.io</string>
     <string name="about_shapeshift_message">ShapeShift.io is an instant altcoin exchange that provides Bitcoin and altcoin conversion. The platform (available in both web and API flavors) represents the fastest, most efficient way to convert between Bitcoin and dozens of altcoins within the Bitcoin ecosystem. No account needed.</string>
 
+    <!-- Preferences -->
+    <string name="movies_categories_key">categoriesKey</string>
+    <string name="default_movies_categories">popular</string>
+    <string name="server_url_key">urlKey</string>
+    <string name="server_url_default">http://localhost:8080</string>
 </resources>

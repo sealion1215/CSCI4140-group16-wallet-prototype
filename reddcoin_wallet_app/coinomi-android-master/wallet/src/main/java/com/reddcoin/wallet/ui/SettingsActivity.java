@@ -1,6 +1,8 @@
 package com.reddcoin.wallet.ui;
 
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 
 import com.reddcoin.wallet.R;
 
@@ -14,12 +16,20 @@ public class SettingsActivity extends BaseWalletActivity {
         setContentView(R.layout.activity_settings);
 
         if (savedInstanceState == null) {
-            //getSupportFragmentManager().beginTransaction()
-            //        .add(R.id.container, new SettingsFragment())
-            //        .commit();
+            // FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            // transaction.add(R.id.container, new SettingsFragment());
+            // transaction.commit();
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.container, new SettingsFragment())
+                    .commit();
         }
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(false);
     }
+
+//    @Override
+//    protected int getLayout() {
+//        return R.layout.activity_settings;
+//    }
 }

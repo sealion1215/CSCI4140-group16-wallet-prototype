@@ -1,7 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    
+    <ListPreference
+        android:defaultValue="popular"
+        android:entries="@array/categories"
+        android:entryValues="@array/categories_value"
+        android:summary="Select categories of movies"
+        android:title="Test List"
+        android:key="@string/movies_categories_key" />
 
-    <Preference android:title="@string/pref_title_exchange_rates" >
+    <EditTextPreference
+        android:id="@+id/url"
+        android:defaultValue="@string/server_url_default"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:title="Server URL"
+        android:ems="10"
+        android:inputType="text"
+        android:summary="Set URL to server"
+        android:key="@string/server_url_key" />
+
+<!--     <Preference android:title="@string/pref_title_exchange_rates" >
         <intent android:targetPackage="@string/app_package"
             android:targetClass="com.reddcoin.wallet.ui.ExchangeRatesActivity" />
     </Preference>
@@ -20,5 +41,5 @@
         android:key="manual_receiving_addresses"
         android:title="@string/pref_title_manual_receiving_addresses"
         android:summary="@string/pref_summary_manual_receiving_addresses"
-        android:defaultValue="false"/>
+        android:defaultValue="false"/> -->
 </PreferenceScreen>

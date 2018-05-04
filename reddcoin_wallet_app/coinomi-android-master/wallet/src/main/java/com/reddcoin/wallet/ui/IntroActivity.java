@@ -67,7 +67,7 @@ public class IntroActivity extends AbstractWalletFragmentActivity
     @Override
     public void onTestWallet() {
         if (getWalletApplication().getWallet() == null) {
-            //makeTestWallet();
+            makeTestWallet();
         } else {
             new AlertDialog.Builder(this)
                     .setTitle(R.string.test_wallet_warning_title)
@@ -76,7 +76,7 @@ public class IntroActivity extends AbstractWalletFragmentActivity
                     .setPositiveButton(R.string.button_confirm, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            //makeTestWallet();
+                            makeTestWallet();
                         }
                     })
                     .create().show();
@@ -84,16 +84,16 @@ public class IntroActivity extends AbstractWalletFragmentActivity
 
     }
 
-//    private void makeTestWallet() {
-//        Bundle args = new Bundle();
-//        args.putString(Constants.ARG_SEED, Wallet.generateMnemonicString(Constants.SEED_ENTROPY_DEFAULT));
-//        args.putBoolean(Constants.ARG_SEED_PROTECT, false);
-//        args.putString(Constants.ARG_PASSWORD, null);
-//        args.putStringArrayList(Constants.ARG_MULTIPLE_COIN_IDS, Constants.DEFAULT_TEST_COIN_IDS);
-//        args.putBoolean(Constants.ARG_TEST_WALLET, true);
-//
-//        replaceFragment(FinalizeWalletRestorationFragment.newInstance(args));
-//    }
+   private void makeTestWallet() {
+       Bundle args = new Bundle();
+       args.putString(Constants.ARG_SEED, Wallet.generateMnemonicString(Constants.SEED_ENTROPY_DEFAULT));
+       args.putBoolean(Constants.ARG_SEED_PROTECT, false);
+       args.putString(Constants.ARG_PASSWORD, null);
+       //args.putStringArrayList(Constants.ARG_MULTIPLE_COIN_IDS, Constants.DEFAULT_TEST_COIN_IDS);
+       args.putBoolean(Constants.ARG_TEST_WALLET, true);
+
+       replaceFragment(FinalizeWalletRestorationFragment.newInstance(args));
+   }
 
     @Override
     public void onSeedCreated(String seed) {
