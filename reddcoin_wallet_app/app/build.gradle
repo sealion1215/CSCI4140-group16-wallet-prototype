@@ -22,8 +22,8 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
 
     // core dependencies
-    compile fileTree(dir: '../core/libs', include: ['*.jar'])
-    compile project(':core')
+    implementation fileTree(dir: '../core/libs', include: ['*.jar'])
+    implementation project(':core')
 
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support.constraint:constraint-layout:1.1.0'
