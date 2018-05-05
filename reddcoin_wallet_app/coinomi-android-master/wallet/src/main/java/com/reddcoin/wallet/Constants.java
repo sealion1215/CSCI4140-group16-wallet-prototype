@@ -85,4 +85,6 @@ public class Constants {
     public static final String COINS_BLOCK_EXPLORER = "http://live.reddcoin.com/tx/%s";
 
     public static final CoinType DEFAULT_COIN = ReddcoinMain.get();
+
+    //public static final String DEFAULT_TEST_COIN_IDS = "test_coin_id";
 }
