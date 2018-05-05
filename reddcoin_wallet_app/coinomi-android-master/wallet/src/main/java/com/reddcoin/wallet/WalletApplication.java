@@ -25,16 +25,16 @@ import com.reddcoin.wallet.service.CoinServiceImpl;
 import com.reddcoin.wallet.util.Fonts;
 import com.reddcoin.wallet.util.LinuxSecureRandom;
 import com.google.common.collect.ImmutableList;
-//import com.squareup.okhttp.Cache;
-//import com.squareup.okhttp.ConnectionSpec;
-//import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Cache;
+import com.squareup.okhttp.ConnectionSpec;
+import com.squareup.okhttp.OkHttpClient;
 
 import org.acra.annotation.ReportsCrashes;
 import org.acra.sender.HttpSender;
 import org.bitcoinj.crypto.MnemonicCode;
 import org.bitcoinj.store.UnreadableWalletException;
-// import org.slf4j.Logger;
-// import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -51,14 +51,14 @@ import javax.annotation.Nullable;
  * @author John L. Jegutanis
  * @author Andreas Schildbach
  */
-//@ReportsCrashes(
-//        // Also uncomment ACRA.init(this) in onCreate
-//        httpMethod = HttpSender.Method.PUT,
-//        reportType = HttpSender.Type.JSON,
-//        formKey = ""
-//)
+@ReportsCrashes(
+       // Also uncomment ACRA.init(this) in onCreate
+       httpMethod = HttpSender.Method.PUT,
+       reportType = HttpSender.Type.JSON,
+       formKey = ""
+)
 public class WalletApplication extends Application {
-    // private static final Logger log = LoggerFactory.getLogger(WalletApplication.class);
+    private static final Logger log = LoggerFactory.getLogger(WalletApplication.class);
 
     private static HashMap<String, Typeface> typefaces;
     private static String httpUserAgent;
@@ -78,7 +78,7 @@ public class WalletApplication extends Application {
     private long lastStop;
 
     private ConnectivityManager connManager;
-    //private OkHttpClient client;
+    private OkHttpClient client;
     private ShapeShift shapeShift;
 
     @Override
@@ -115,7 +115,7 @@ public class WalletApplication extends Application {
             try {
                 MnemonicCode.INSTANCE = new MnemonicCode();
             } catch (Exception e) {
-                // log.error("Could not set MnemonicCode.INSTANCE", e);
+                log.error("Could not set MnemonicCode.INSTANCE", e);
             }
         }
 
@@ -138,22 +138,22 @@ public class WalletApplication extends Application {
         return activeInfo != null && activeInfo.isConnected();
     }
 
-    // public OkHttpClient getHttpClient() {
-    //     if (client == null) {
-    //         client = new OkHttpClient();
-    //         client.setConnectionSpecs(Collections.singletonList(ConnectionSpec.MODERN_TLS));
-    //         client.setConnectTimeout(Constants.HTTP_TIMEOUT_MS, TimeUnit.MILLISECONDS);
-    //         // Setup cache
-    //         File cacheDir = new File(getCacheDir(), Constants.HTTP_CACHE_DIR);
-    //         Cache cache = new Cache(cacheDir, Constants.HTTP_CACHE_SIZE);
-    //         client.setCache(cache);
-    //     }
-    //     return client;
-    // }
+    public OkHttpClient getHttpClient() {
+        if (client == null) {
+            client = new OkHttpClient();
+            client.setConnectionSpecs(Collections.singletonList(ConnectionSpec.MODERN_TLS));
+            client.setConnectTimeout(Constants.HTTP_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+            // Setup cache
+            File cacheDir = new File(getCacheDir(), Constants.HTTP_CACHE_DIR);
+            Cache cache = new Cache(cacheDir, Constants.HTTP_CACHE_SIZE);
+            client.setCache(cache);
+        }
+        return client;
+    }
 
     public ShapeShift getShapeShift() {
         if (shapeShift == null) {
-            // shapeShift = new ShapeShift(getHttpClient());
+            shapeShift = new ShapeShift(getHttpClient());
         }
         return shapeShift;
     }
@@ -312,12 +312,12 @@ public class WalletApplication extends Application {
 
                 setWallet(WalletProtobufSerializer.readWallet(walletStream));
 
-                // log.info("wallet loaded from: '" + walletFile + "', took " + (System.currentTimeMillis() - start) + "ms");
+                log.info("wallet loaded from: '" + walletFile + "', took " + (System.currentTimeMillis() - start) + "ms");
             } catch (final FileNotFoundException x) {
-                // log.error("problem loading wallet", x);
+                log.error("problem loading wallet", x);
                 Toast.makeText(WalletApplication.this, R.string.error_could_not_read_wallet, Toast.LENGTH_LONG).show();
             } catch (final UnreadableWalletException x) {
-                // log.error("problem loading wallet", x);
+                log.error("problem loading wallet", x);
 
                 Toast.makeText(WalletApplication.this, R.string.error_could_not_read_wallet, Toast.LENGTH_LONG).show();
             } finally {

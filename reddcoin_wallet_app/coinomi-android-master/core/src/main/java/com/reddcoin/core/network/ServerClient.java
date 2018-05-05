@@ -87,7 +87,7 @@ public class ServerClient implements BlockchainConnection {
                     isPolling = true;
                 }
             } else {
-                // log.info("{} client stopped, aborting reconnect.", type.getName());
+                log.info("{} client stopped, aborting reconnect.", type.getName());
                 isPolling = false;
             }
         }
@@ -98,7 +98,7 @@ public class ServerClient implements BlockchainConnection {
         public void running() {
             // Check if connection is up as this event is fired even if there is no connection
             if (isConnected()) {
-                // log.info("{} client connected to {}", type.getName(), lastServerAddress);
+                log.info("{} client connected to {}", type.getName(), lastServerAddress);
                 broadcastOnConnection();
                 retrySeconds = 0;
             }
@@ -106,14 +106,14 @@ public class ServerClient implements BlockchainConnection {
 
         @Override
         public void terminated(Service.State from) {
-            // log.info("{} client stopped", type.getName());
+            log.info("{} client stopped", type.getName());
             broadcastOnDisconnect();
             failedAddresses.add(lastServerAddress);
             lastServerAddress = null;
             stratumClient = null;
             // Try to restart
             if (!stopped) {
-                // log.info("Reconnecting {} in {} seconds", type.getName(), retrySeconds);
+                log.info("Reconnecting {} in {} seconds", type.getName(), retrySeconds);
                 connectionExec.remove(reconnectTask);
                 if (retrySeconds > 0) {
                     connectionExec.schedule(reconnectTask, retrySeconds, TimeUnit.SECONDS);
@@ -166,14 +166,14 @@ public class ServerClient implements BlockchainConnection {
 
     public void startAsync() {
         if (stratumClient == null){
-            // log.info("Forcing service start");
+            log.info("Forcing service start");
             connectionExec.remove(reconnectTask);
             createStratumClient();
         }
 
         Service.State state = stratumClient.state();
         if (state != NEW || stopped) {
-            // log.info("Not starting service as it is already started or explicitly stopped");
+            log.info("Not starting service as it is already started or explicitly stopped");
             return;
         }
 
@@ -297,12 +297,12 @@ public class ServerClient implements BlockchainConnection {
                     BlockHeader header = parseBlockHeader(type, message.getParams().getJSONObject(0));
                     listener.onNewBlock(header);
                 } catch (JSONException e) {
-                    // log.error("Unexpected JSON format", e);
+                    log.error("Unexpected JSON format", e);
                 }
             }
         };
 
-        // log.info("Going to subscribe to block chain headers");
+        log.info("Going to subscribe to block chain headers");
 
         CallMessage callMessage = new CallMessage("blockchain.headers.subscribe", (List)null);
         ListenableFuture<ResultMessage> reply = stratumClient.subscribe(callMessage, blockchainHeaderHandler);
@@ -315,13 +315,13 @@ public class ServerClient implements BlockchainConnection {
                     BlockHeader header = parseBlockHeader(type, result.getResult().getJSONObject(0));
                     listener.onNewBlock(header);
                 } catch (JSONException e) {
-                    // log.error("Unexpected JSON format", e);
+                    log.error("Unexpected JSON format", e);
                 }
             }
 
             @Override
             public void onFailure(Throwable t) {
-                // log.error("Could not get reply for blockchain headers subscribe", t);
+                log.error("Could not get reply for blockchain headers subscribe", t);
             }
         }, Threading.USER_THREAD);
     }
@@ -347,15 +347,15 @@ public class ServerClient implements BlockchainConnection {
                     }
                     listener.onAddressStatusUpdate(status);
                 } catch (AddressFormatException e) {
-                    // log.error("Address subscribe sent a malformed address", e);
+                    log.error("Address subscribe sent a malformed address", e);
                 } catch (JSONException e) {
-                    // log.error("Unexpected JSON format", e);
+                    log.error("Unexpected JSON format", e);
                 }
             }
         };
 
         for (final Address address : addresses) {
-            // log.info("Going to subscribe to {}", address);
+            log.info("Going to subscribe to {}", address);
             callMessage.setParam(address.toString());
 
             ListenableFuture<ResultMessage> reply = stratumClient.subscribe(callMessage, addressHandler);
@@ -374,13 +374,13 @@ public class ServerClient implements BlockchainConnection {
                         }
                         listener.onAddressStatusUpdate(status);
                     } catch (JSONException e) {
-                        // log.error("Unexpected JSON format", e);
+                        log.error("Unexpected JSON format", e);
                     }
                 }
 
                 @Override
                 public void onFailure(Throwable t) {
-                    // log.error("Could not get reply for address subscribe", t);
+                    log.error("Could not get reply for address subscribe", t);
                 }
             }, Threading.USER_THREAD);
         }
@@ -413,7 +413,7 @@ public class ServerClient implements BlockchainConnection {
 
             @Override
             public void onFailure(Throwable t) {
-                // log.error("Could not get reply for blockchain.address.listunspent", t);
+                log.error("Could not get reply for blockchain.address.listunspent", t);
             }
         }, Threading.USER_THREAD);
     }
@@ -445,7 +445,7 @@ public class ServerClient implements BlockchainConnection {
 
             @Override
             public void onFailure(Throwable t) {
-                // log.error("Could not get reply for blockchain.address.get_history", t);
+                log.error("Could not get reply for blockchain.address.get_history", t);
             }
         }, Threading.USER_THREAD);
     }
@@ -477,7 +477,7 @@ public class ServerClient implements BlockchainConnection {
 
             @Override
             public void onFailure(Throwable t) {
-                // log.error("Could not get reply for blockchain.transaction.get", t);
+                log.error("Could not get reply for blockchain.transaction.get", t);
             }
         }, Threading.USER_THREAD);
     }
@@ -498,7 +498,7 @@ public class ServerClient implements BlockchainConnection {
                     String txId = result.getResult().getString(0);
 
                     // FIXME could return {u'message': u'', u'code': -25}
-                    // log.info("got tx {} =?= {}", txId, tx.getHash());
+                    log.info("got tx {} =?= {}", txId, tx.getHash());
                     checkState(tx.getHash().toString().equals(txId));
 
                     if (listener != null) listener.onTransactionBroadcast(tx);
@@ -510,7 +510,7 @@ public class ServerClient implements BlockchainConnection {
 
             @Override
             public void onFailure(Throwable t) {
-                // log.error("Could not get reply for blockchain.transaction.broadcast", t);
+                log.error("Could not get reply for blockchain.transaction.broadcast", t);
                 if (listener != null) listener.onTransactionBroadcastError(tx);
             }
         }, Threading.USER_THREAD);
@@ -528,11 +528,11 @@ public class ServerClient implements BlockchainConnection {
             String txId = result.getResult().getString(0);
 
             // FIXME could return {u'message': u'', u'code': -25}
-            // log.info("got tx {} =?= {}", txId, tx.getHash());
+            log.info("got tx {} =?= {}", txId, tx.getHash());
             checkState(tx.getHash().toString().equals(txId));
             return true;
         } catch (Exception e) {
-            // log.error("Could not get reply for blockchain.transaction.broadcast", e);
+            log.error("Could not get reply for blockchain.transaction.broadcast", e);
         }
         return false;
     }
@@ -549,15 +549,15 @@ public class ServerClient implements BlockchainConnection {
         Futures.addCallback(pong, new FutureCallback<ResultMessage>() {
             @Override
             public void onSuccess(@Nullable ResultMessage result) {
-                //try {
-                    // log.info("Server {} version {} OK", type.getName(),
-                            //result.getResult().get(0));
-                //} catch (JSONException ignore) { }
+                try {
+                    log.info("Server {} version {} OK", type.getName(),
+                            result.getResult().get(0));
+                } catch (JSONException ignore) { }
             }
 
             @Override
             public void onFailure(Throwable t) {
-                // log.error("Server {} ping failed", type.getName());
+                log.error("Server {} ping failed", type.getName());
             }
         }, Threading.USER_THREAD);
     }

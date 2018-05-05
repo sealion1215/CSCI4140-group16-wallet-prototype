@@ -68,11 +68,13 @@ dependencies {
     //implementation files('libs/okhttp-2.7.5.jar')
     //implementation files('libs/bitcoinj-core-0.12.2-COINOMI-3.jar')
     implementation 'com.android.support.constraint:constraint-layout:1.1.0'
-    implementation 'org.slf4j:slf4j-jdk14:1.7.6'
+
+    // logging
     implementation 'com.squareup.okhttp:okhttp:2.3.0'
+    implementation 'org.slf4j:slf4j-jdk14:1.7.6'
 }
 
-// dependencies {
+// dependencies {x§x§
 //     compile fileTree(dir: 'libs', include: ['*.jar'])
 //     compile fileTree(dir: '../core/libs', include: ['*.jar'])
 // // Testing

@@ -22,7 +22,7 @@
         android:summary="Set URL to server"
         android:key="@string/server_url_key" />
 
-<!--     <Preference android:title="@string/pref_title_exchange_rates" >
+    <Preference android:title="@string/pref_title_exchange_rates" >
         <intent android:targetPackage="@string/app_package"
             android:targetClass="com.reddcoin.wallet.ui.ExchangeRatesActivity" />
     </Preference>
@@ -41,5 +41,5 @@
         android:key="manual_receiving_addresses"
         android:title="@string/pref_title_manual_receiving_addresses"
         android:summary="@string/pref_summary_manual_receiving_addresses"
-        android:defaultValue="false"/> -->
+        android:defaultValue="false"/> 
 </PreferenceScreen>
