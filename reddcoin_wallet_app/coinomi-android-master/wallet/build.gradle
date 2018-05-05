@@ -67,6 +67,7 @@ dependencies {
     //implementation files('libs/slf4j-api-1.7.25.jar')
     //implementation files('libs/okhttp-2.7.5.jar')
     //implementation files('libs/bitcoinj-core-0.12.2-COINOMI-3.jar')
+    implementation 'com.android.support.constraint:constraint-layout:1.1.0'
 }
 
 // dependencies {
@@ -103,3 +104,4 @@ dependencies {
 //        testOutputDir = file('build/test-classes/debug')
 //    }
 //}
+
