@@ -43,3 +43,4 @@ task unitTest(type:Test, dependsOn: assemble) {
 
 // bind to check
 check.dependsOn unitTest
+

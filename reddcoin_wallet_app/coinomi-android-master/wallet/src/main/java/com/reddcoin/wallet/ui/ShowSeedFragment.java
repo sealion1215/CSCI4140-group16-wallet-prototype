@@ -27,8 +27,8 @@ import org.bitcoinj.crypto.DeterministicKey;
 import org.bitcoinj.crypto.HDKeyDerivation;
 import org.bitcoinj.crypto.KeyCrypter;
 import org.bitcoinj.wallet.DeterministicSeed;
-// import org.slf4j.Logger;
-// import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.spongycastle.crypto.params.KeyParameter;
 
 import static com.reddcoin.core.Preconditions.checkState;
@@ -37,7 +37,7 @@ import static com.reddcoin.core.Preconditions.checkState;
  * @author John L. Jegutanis
  */
 public class ShowSeedFragment extends Fragment {
-    // private static final Logger log = LoggerFactory.getLogger(ShowSeedFragment.class);
+    private static final Logger log = LoggerFactory.getLogger(ShowSeedFragment.class);
 
     private static final int UPDATE_VIEW = 0;
 
@@ -52,6 +52,25 @@ public class ShowSeedFragment extends Fragment {
 
     private Wallet wallet;
     private String password;
+
+    public static class PasswordDialog extends UnlockWalletDialog {
+        public ShowSeedFragment showSeedFragment;
+        public Handler handle;
+
+
+        @Override
+        public void onPassword(String password) {
+            //ShowSeedFragment.this.password = password;
+            //handler.sendEmptyMessage(UPDATE_VIEW);
+            this.showSeedFragment.password = password;
+            this.handle.sendEmptyMessage(UPDATE_VIEW);
+        }
+        @Override
+        public void onCancel() { }
+    };
+
+    PasswordDialog passwordDialog = new PasswordDialog();
+
 
     private final Handler handler = new MyHandler(this);
     private static class MyHandler extends WeakHandler<ShowSeedFragment> {
@@ -69,6 +88,9 @@ public class ShowSeedFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        passwordDialog.showSeedFragment = this;
+        passwordDialog.handle = handler;
 
         maxQrSize = LayoutUtils.calculateMaxQrCodeSize(getResources());
     }
@@ -129,6 +151,7 @@ public class ShowSeedFragment extends Fragment {
             } else if (wallet.getSeed().isEncrypted()) {
                 seedEncryptedLayout.setVisibility(View.VISIBLE);
                 if (password == null) {
+                    System.out.print("passwordDialog");
                     passwordDialog.show(getFragmentManager(), null);
                 } else {
                     maybeStartDecryptTask();
@@ -139,15 +162,6 @@ public class ShowSeedFragment extends Fragment {
             }
         }
     }
-
-    DialogFragment passwordDialog = new UnlockWalletDialog() {
-        @Override
-        public void onPassword(String password) {
-            ShowSeedFragment.this.password = password;
-            handler.sendEmptyMessage(UPDATE_VIEW);
-        }
-        @Override public void onCancel() { }
-    };
 
     private void maybeStartDecryptTask() {
         if (decryptSeedTask == null) {
@@ -190,7 +204,7 @@ public class ShowSeedFragment extends Fragment {
                     // Use empty password to check if the seed is password protected
                     seed = new DeterministicSeed(seed.getMnemonicCode(), null, "", 0);
                 } catch (Exception e) {
-                    //log.warn("Failed recovering seed.");
+                    log.warn("Failed recovering seed.");
                 }
             }
 
@@ -238,3 +252,4 @@ public class ShowSeedFragment extends Fragment {
         public void onSeedNotAvailable();
     }
 }
+

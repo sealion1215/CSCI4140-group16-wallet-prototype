@@ -76,9 +76,9 @@ public class Constants {
     // TODO move to resource files
     public static final List<CoinAddress> DEFAULT_COINS_SERVERS = ImmutableList.of(
             new CoinAddress(ReddcoinMain.get(),
-                    new ServerAddress("10.0.2.2", 8081),
                     new ServerAddress("10.0.2.2", 50001),
-                    new ServerAddress("10.0.2.2", 50002))
+                    new ServerAddress("10.0.2.2", 50001),
+                    new ServerAddress("10.0.2.2", 8081))
             );
 
     public static final Integer COIN_ICON = R.drawable.reddcoin;
