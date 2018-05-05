@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Reddcoin (dev)</string>
+    <string name="app_name">Reddcoin</string>
     <string name="app_package">com.reddcoin.wallet.dev</string>
     <string name="action_scan_qr_code">Scan</string>
     <string name="action_share">Share</string>
@@ -13,6 +13,7 @@
     <string name="action_refresh">Refresh</string>
     <string name="action_new_address">New address</string>
     <string name="action_swap_coins">Swap coins</string>
+    <string name="action_friends">Friends</string>
 
     <!-- Errors -->
     <string name="error_generic">Error occurred while performing action</string>
@@ -288,9 +289,14 @@
     <string name="about_shapeshift_title">About ShapeShift.io</string>
     <string name="about_shapeshift_message">ShapeShift.io is an instant altcoin exchange that provides Bitcoin and altcoin conversion. The platform (available in both web and API flavors) represents the fastest, most efficient way to convert between Bitcoin and dozens of altcoins within the Bitcoin ecosystem. No account needed.</string>
 
+    <!--Friends Tab-->
+    <string name="friend_list_title">Friends:</string>
+    <string name="add_friend">Add</string>
+
     <!-- Preferences -->
     <string name="movies_categories_key">categoriesKey</string>
     <string name="default_movies_categories">popular</string>
     <string name="server_url_key">urlKey</string>
     <string name="server_url_default">http://localhost:8080</string>
+
 </resources>

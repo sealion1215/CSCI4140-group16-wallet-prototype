@@ -423,6 +423,9 @@ final public class WalletActivity extends BaseWalletActivity implements
         } else if (id == R.id.action_about) {
             startActivity(new Intent(WalletActivity.this, AboutActivity.class));
             return true;
+        } else if(id == R.id.action_friends){
+            startActivity(new Intent(WalletActivity.this, FriendsActivity.class));
+            return true;
         }
 
         return super.onOptionsItemSelected(item);
