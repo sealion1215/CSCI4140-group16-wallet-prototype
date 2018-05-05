@@ -27,8 +27,8 @@ import java.util.zip.GZIPOutputStream;
 
 import javax.annotation.Nonnull;
 
-// import org.slf4j.Logger;
-// import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import android.graphics.Bitmap;
 
@@ -48,7 +48,7 @@ public class Qr
 {
     private final static QRCodeWriter QR_CODE_WRITER = new QRCodeWriter();
 
-    // private static final Logger log = LoggerFactory.getLogger(Qr.class);
+    private static final Logger log = LoggerFactory.getLogger(Qr.class);
     private static final ErrorCorrectionLevel ERROR_CORRECTION_LV = ErrorCorrectionLevel.H;
 
     private static final int darkColor = 0xdd000000;
@@ -87,7 +87,7 @@ public class Qr
         }
         catch (final WriterException x)
         {
-            // log.info("problem creating qr code", x);
+            log.info("problem creating qr code", x);
             return null;
         }
     }

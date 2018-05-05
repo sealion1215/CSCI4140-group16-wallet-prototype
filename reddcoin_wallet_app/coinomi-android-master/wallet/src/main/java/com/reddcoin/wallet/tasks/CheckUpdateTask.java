@@ -5,8 +5,8 @@ import android.os.AsyncTask;
 import com.reddcoin.wallet.Constants;
 import com.google.common.base.Charsets;
 
-// import org.slf4j.Logger;
-// import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -17,7 +17,7 @@ import java.net.URL;
  * @author John L. Jegutanis
  */
 public class CheckUpdateTask extends AsyncTask<Void, Void, Integer> {
-    // private static final Logger log = LoggerFactory.getLogger(CheckUpdateTask.class);
+    private static final Logger log = LoggerFactory.getLogger(CheckUpdateTask.class);
 
     @Override
     protected Integer doInBackground(Void... params) {
@@ -38,7 +38,7 @@ public class CheckUpdateTask extends AsyncTask<Void, Void, Integer> {
                 return Integer.valueOf(line);
             }
         } catch (final Exception e) {
-            //log.info("Could not check for update", e);
+            log.info("Could not check for update", e);
         } finally {
             if (connection != null)
                 connection.disconnect();

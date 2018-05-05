@@ -67,6 +67,8 @@ dependencies {
     //implementation files('libs/slf4j-api-1.7.25.jar')
     //implementation files('libs/okhttp-2.7.5.jar')
     //implementation files('libs/bitcoinj-core-0.12.2-COINOMI-3.jar')
+    implementation 'org.slf4j:slf4j-jdk14:1.7.6'
+    implementation 'com.squareup.okhttp:okhttp:2.3.0'
 }
 
 // dependencies {

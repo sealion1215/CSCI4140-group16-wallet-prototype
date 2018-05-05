@@ -21,14 +21,14 @@ import com.reddcoin.wallet.AddressBookProvider;
 import com.reddcoin.wallet.R;
 import com.reddcoin.wallet.ui.EditAddressBookEntryFragment;
 
-// import org.slf4j.Logger;
-// import org.slf4j.LoggerFactory;
+ import org.slf4j.Logger;
+ import org.slf4j.LoggerFactory;
 
 /**
  * @author John L. Jegutanis
  */
 public class UiUtils {
-    // private static final Logger log = LoggerFactory.getLogger(UiUtils.class);
+    private static final Logger log = LoggerFactory.getLogger(UiUtils.class);
 
     static public void share(Activity activity, String text) {
         ShareCompat.IntentBuilder builder = ShareCompat.IntentBuilder.from(activity)
@@ -45,7 +45,7 @@ public class UiUtils {
                                            final Activity activity,
                                            final FragmentManager fragmentManager) {
         if (!(activity instanceof AppCompatActivity)) {
-            //log.warn("To show action mode, your activity must extend " + AppCompatActivity.class);
+            log.warn("To show action mode, your activity must extend " + AppCompatActivity.class);
             return;
         }
 

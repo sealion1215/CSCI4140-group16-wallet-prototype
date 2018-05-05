@@ -25,8 +25,8 @@ import com.reddcoin.wallet.WalletApplication;
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.core.Transaction;
-// import org.slf4j.Logger;
-// import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
 import java.util.LinkedList;
@@ -69,7 +69,7 @@ public class CoinServiceImpl extends Service implements CoinService {
     private static final int MAX_HISTORY_SIZE = Math.max(IDLE_TRANSACTION_TIMEOUT_MIN, IDLE_BLOCK_TIMEOUT_MIN);
     private static final long APPWIDGET_THROTTLE_MS = DateUtils.SECOND_IN_MILLIS;
 
-    // private static final Logger log = LoggerFactory.getLogger(CoinService.class);
+    private static final Logger log = LoggerFactory.getLogger(CoinService.class);
 
 //    private final WalletEventListener walletEventListener = new ThrottlingWalletChangeListener(APPWIDGET_THROTTLE_MS)
 //    {
@@ -183,18 +183,18 @@ public class CoinServiceImpl extends Service implements CoinService {
                     isNetworkChanged = false;
                     currentNetworkType = -1;
                 }
-                // log.info("network is " + (hasConnectivity ? "up" : "down"));
-                // log.info("network type " + (isNetworkChanged ? "changed" : "didn't change"));
+                log.info("network is " + (hasConnectivity ? "up" : "down"));
+                log.info("network type " + (isNetworkChanged ? "changed" : "didn't change"));
 
                 check(isNetworkChanged);
             } else if (Intent.ACTION_DEVICE_STORAGE_LOW.equals(action)) {
                 hasStorage = false;
-                // log.info("device storage low");
+                log.info("device storage low");
 
                 check(false);
             } else if (Intent.ACTION_DEVICE_STORAGE_OK.equals(action)) {
                 hasStorage = true;
-                // log.info("device storage ok");
+                log.info("device storage ok");
 
                 check(false);
             }
@@ -206,21 +206,21 @@ public class CoinServiceImpl extends Service implements CoinService {
             final boolean hasEverything = hasConnectivity && hasStorage && (wallet != null);
 
             if (hasEverything && clients == null) {
-               // log.debug("acquiring wakelock");
+//                log.debug("acquiring wakelock");
 //                wakeLock.acquire();
 
-                // log.info("Creating coins clients");
+                log.info("Creating coins clients");
                 clients = getServerClients(wallet);
                 if (lastAccount != null) clients.startAsync(wallet.getAccount(lastAccount));
             } else if (hasEverything && isNetworkChanged) {
-                // log.info("Restarting coins clients as network changed");
+                log.info("Restarting coins clients as network changed");
                 clients.resetConnections();
             } else if (!hasEverything && clients != null) {
-                // log.info("stopping stratum clients");
+                log.info("stopping stratum clients");
                 clients.stopAllAsync();
                 clients = null;
 
-               // log.debug("releasing wakelock");
+//                log.debug("releasing wakelock");
 //                wakeLock.release();
             }
         }
@@ -233,7 +233,7 @@ public class CoinServiceImpl extends Service implements CoinService {
     private final BroadcastReceiver tickReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(final Context context, final Intent intent) {
-            // log.debug("Received a tick {}", intent);
+            log.debug("Received a tick {}", intent);
 
             if (clients != null) {
                 clients.ping();
@@ -244,7 +244,7 @@ public class CoinServiceImpl extends Service implements CoinService {
                 long secondsIdle = (SystemClock.elapsedRealtime() - lastStop) / 1000;
 
                 if (secondsIdle > Constants.STOP_SERVICE_AFTER_IDLE_SECS) {
-                    // log.info("Idling detected, stopping service");
+                    log.info("Idling detected, stopping service");
                     stopSelf();
                 }
             }
@@ -261,14 +261,14 @@ public class CoinServiceImpl extends Service implements CoinService {
 
     @Override
     public IBinder onBind(final Intent intent) {
-        // log.debug(".onBind()");
+        log.debug(".onBind()");
 
         return mBinder;
     }
 
     @Override
     public boolean onUnbind(final Intent intent) {
-        // log.debug(".onUnbind()");
+        log.debug(".onUnbind()");
 
         return super.onUnbind(intent);
     }
@@ -277,7 +277,7 @@ public class CoinServiceImpl extends Service implements CoinService {
     public void onCreate()
     {
         serviceCreatedAt = System.currentTimeMillis();
-        // log.debug(".onCreate()");
+        log.debug(".onCreate()");
 
         super.onCreate();
 
@@ -314,8 +314,8 @@ public class CoinServiceImpl extends Service implements CoinService {
     @Override
     public int onStartCommand(final Intent intent, final int flags, final int startId)
     {
-        // log.info("service start command: " + intent
-                //+ (intent.hasExtra(Intent.EXTRA_ALARM_COUNT) ? " (alarm count: " + intent.getIntExtra(Intent.EXTRA_ALARM_COUNT, 0) + ")" : ""));
+        log.info("service start command: " + intent
+                + (intent.hasExtra(Intent.EXTRA_ALARM_COUNT) ? " (alarm count: " + intent.getIntExtra(Intent.EXTRA_ALARM_COUNT, 0) + ")" : ""));
 
         final String action = intent.getAction();
 
@@ -339,15 +339,15 @@ public class CoinServiceImpl extends Service implements CoinService {
                             clients.resetAccount(account);
                         }
                     } else {
-                        // log.warn("Tried to start a service for account id {} but no pocket found.",
-                                //accountId);
+                        log.warn("Tried to start a service for account id {} but no pocket found.",
+                                accountId);
                     }
 
                 } else {
-                    // log.warn("Missing account id argument, not doing anything");
+                    log.warn("Missing account id argument, not doing anything");
                 }
             } else {
-                // log.warn("Got wallet reset intent, but no wallet is available");
+                log.warn("Got wallet reset intent, but no wallet is available");
             }
         } else if (CoinService.ACTION_CONNECT_COIN.equals(action)) {
             if (application.getWallet() != null) {
@@ -364,14 +364,14 @@ public class CoinServiceImpl extends Service implements CoinService {
                             clients.startAsync(pocket);
                         }
                     } else {
-                        // log.warn("Tried to start a service for account id {} but no pocket found.",
-                                //lastAccount);
+                        log.warn("Tried to start a service for account id {} but no pocket found.",
+                                lastAccount);
                     }
                 } else {
-                    // log.warn("Missing account id argument, not doing anything");
+                    log.warn("Missing account id argument, not doing anything");
                 }
             } else {
-                // log.error("Got connect coin intent, but no wallet is available");
+                log.error("Got connect coin intent, but no wallet is available");
             }
         } else if (CoinService.ACTION_BROADCAST_TRANSACTION.equals(action)) {
             final Sha256Hash hash = new Sha256Hash(intent.getByteArrayExtra(CoinService.ACTION_BROADCAST_TRANSACTION_HASH));
@@ -379,12 +379,12 @@ public class CoinServiceImpl extends Service implements CoinService {
 
             if (clients != null)
             {
-                // log.info("broadcasting transaction " + tx.getHashAsString());
+                log.info("broadcasting transaction " + tx.getHashAsString());
                 broadcastTransaction(tx);
             }
             else
             {
-                // log.info("client not available, not broadcasting transaction " + tx.getHashAsString());
+                log.info("client not available, not broadcasting transaction " + tx.getHashAsString());
             }
         }
 
@@ -398,7 +398,7 @@ public class CoinServiceImpl extends Service implements CoinService {
     @Override
     public void onDestroy()
     {
-        // log.debug(".onDestroy()");
+        log.debug(".onDestroy()");
 
         unregisterReceiver(tickReceiver);
         unregisterReceiver(connectivityReceiver);
@@ -412,18 +412,18 @@ public class CoinServiceImpl extends Service implements CoinService {
 
 //        if (wakeLock.isHeld())
 //        {
-           //log.debug("wakelock still held, releasing");
+//            log.debug("wakelock still held, releasing");
 //            wakeLock.release();
 //        }
 
         super.onDestroy();
 
-        // log.info("service was up for " + ((System.currentTimeMillis() - serviceCreatedAt) / 1000 / 60) + " minutes");
+        log.info("service was up for " + ((System.currentTimeMillis() - serviceCreatedAt) / 1000 / 60) + " minutes");
     }
 
     @Override
     public void onLowMemory() {
-        // log.warn("low memory detected, stopping service");
+        log.warn("low memory detected, stopping service");
         stopSelf();
     }
 }

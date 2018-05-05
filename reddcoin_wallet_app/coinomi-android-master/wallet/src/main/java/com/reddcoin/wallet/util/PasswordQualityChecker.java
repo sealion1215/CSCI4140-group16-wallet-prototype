@@ -2,8 +2,8 @@ package com.reddcoin.wallet.util;
 
 import android.content.Context;
 
-// import org.slf4j.Logger;
-// import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,7 +21,7 @@ import java.util.Set;
  * https://xato.net/passwords/more-top-worst-passwords/
  */
 public class PasswordQualityChecker {
-    // private static final Logger log = LoggerFactory.getLogger(PasswordQualityChecker.class);
+    private static final Logger log = LoggerFactory.getLogger(PasswordQualityChecker.class);
     public static final int DEFAULT_MIN_PASSWORD_LENGTH = 8;
     private static final String COMMON_PASSWORDS_TXT = "common_passwords.txt";
     private final HashSet<String> passwordList;
@@ -45,7 +45,7 @@ public class PasswordQualityChecker {
             }
             br.close();
         } catch (IOException e) {
-            //log.error("Could not open common passwords file.", e);
+            log.error("Could not open common passwords file.", e);
         }
     }
 
