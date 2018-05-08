@@ -294,6 +294,7 @@
     <string name="add_friend">Add</string>
     <string name="friend_name_input">type name</string>
     <string name="friend_address_input">type address</string>
+    <string name="friend_list_key">friends_list_storage</string>
 
     <!-- Preferences -->
     <string name="movies_categories_key">categoriesKey</string>
