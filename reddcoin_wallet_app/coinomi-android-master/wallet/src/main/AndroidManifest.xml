@@ -169,7 +169,9 @@
             android:name=".service.CoinServiceImpl"
             android:exported="false" />
 
-        <activity android:name=".ui.FriendsActivity"></activity>
+        <activity android:name=".ui.FriendsActivity"
+            android:label="@string/friend_list_title"
+            ></activity>
     </application>
 
 </manifest>

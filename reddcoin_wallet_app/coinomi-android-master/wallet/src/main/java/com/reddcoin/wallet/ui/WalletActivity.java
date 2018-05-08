@@ -54,6 +54,7 @@ final public class WalletActivity extends BaseWalletActivity implements
         NavigationDrawerFragment.NavigationDrawerCallbacks, BalanceFragment.Listener,
         SendFragment.Listener {
     // private static final Logger log = LoggerFactory.getLogger(WalletActivity.class);
+    public static final String EXTRA_ACCOUNT = "com.reddcoin.wallet.ACCOUNT";
 
     private static final int RECEIVE = 0;
     private static final int BALANCE = 1;
@@ -424,7 +425,9 @@ final public class WalletActivity extends BaseWalletActivity implements
             startActivity(new Intent(WalletActivity.this, AboutActivity.class));
             return true;
         } else if(id == R.id.action_friends){
-            startActivity(new Intent(WalletActivity.this, FriendsActivity.class));
+            Intent intent = new Intent(WalletActivity.this, FriendsActivity.class);
+            intent.putExtra(EXTRA_ACCOUNT, currentAccountId);
+            startActivity(intent);
             return true;
         }
 

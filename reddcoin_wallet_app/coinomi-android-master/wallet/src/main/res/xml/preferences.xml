@@ -38,7 +38,7 @@
     </Preference>
 
     <CheckBoxPreference
-        android:key="manual_receiving_addresses"
+        android:key="manual_receiving_addresses";
         android:title="@string/pref_title_manual_receiving_addresses"
         android:summary="@string/pref_summary_manual_receiving_addresses"
         android:defaultValue="false"/> 
