@@ -466,7 +466,7 @@ final public class WalletActivity extends BaseWalletActivity implements
             mNavigationDrawerFragment.closeDrawer();
             return;
         }
-
+        
         // If not in balance screen, back button brings us there
         boolean screenChanged = goToBalance();
         if (!screenChanged) {

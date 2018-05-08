@@ -245,18 +245,19 @@
 
     <!-- Settings -->
     <string name="title_activity_settings">Settings</string>
+    <string name="pref_server">Server settings</string>
     <string name="pref_title_restore_wallet">Restore wallet</string>
     <string name="pref_title_exchange_rates">Exchange rates</string>
     <string name="pref_title_manual_receiving_addresses">Manual receiving addresses</string>
     <string name="pref_summary_manual_receiving_addresses">Do not automatically create a new address for every transaction</string>
 
     <!-- Show Seed -->
-    <string name="title_activity_show_seed">Show recovery phrase</string>
-    <string name="seed_not_available_title">No recovery phrase found</string>
-    <string name="seed_not_available">Your recovery phrase is not saved on this device.\nTry restoring your wallet to solve this.</string>
+    <string name="title_activity_show_seed">Show back-up phrase</string>
+    <string name="seed_not_available_title">No back-up phrase found</string>
+    <string name="seed_not_available">Your back-up phrase is not saved on this device.\nTry restoring your wallet to solve this.</string>
     <string name="seed_encrypted_touch_to_decrypt">Touch to unlock</string>
     <string name="seed_working">Please wait&#8230;</string>
-    <string name="seed_password_protected">This recovery phrase is password protected</string>
+    <string name="seed_password_protected">This back-up is password protected</string>
 
     <!-- Exchange -->
 
@@ -298,5 +299,8 @@
     <string name="default_movies_categories">popular</string>
     <string name="server_url_key">urlKey</string>
     <string name="server_url_default">http://localhost:8080</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>

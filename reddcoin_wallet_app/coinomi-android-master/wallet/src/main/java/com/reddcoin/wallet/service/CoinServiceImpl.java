@@ -6,18 +6,24 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.SystemClock;
+import android.support.v7.preference.PreferenceManager;
 import android.text.format.DateUtils;
 
+import com.google.common.collect.ImmutableList;
+import com.reddcoin.core.coins.ReddcoinMain;
+import com.reddcoin.core.network.CoinAddress;
 import com.reddcoin.core.network.ConnectivityHelper;
 import com.reddcoin.core.network.ServerClients;
 import com.reddcoin.core.wallet.Wallet;
 import com.reddcoin.core.wallet.WalletAccount;
+import com.reddcoin.stratumj.ServerAddress;
 import com.reddcoin.wallet.Configuration;
 import com.reddcoin.wallet.Constants;
 import com.reddcoin.wallet.WalletApplication;
@@ -71,96 +77,8 @@ public class CoinServiceImpl extends Service implements CoinService {
 
     private static final Logger log = LoggerFactory.getLogger(CoinService.class);
 
-//    private final WalletEventListener walletEventListener = new ThrottlingWalletChangeListener(APPWIDGET_THROTTLE_MS)
-//    {
-//        @Override
-//        public void onThrottledWalletChanged()
-//        {
-//            notifyWidgets();
-//        }
-//
-//        @Override
-//        public void onCoinsReceived(final Wallet wallet, final Transaction tx, final BigInteger prevBalance, final BigInteger newBalance)
-//        {
-//            transactionsReceived.incrementAndGet();
-//
-//            final int bestChainHeight = blockChain.getBestChainHeight();
-//
-//            final Address from = WalletUtils.getFirstFromAddress(tx);
-//            final BigInteger amount = tx.getValue(wallet);
-//            final TransactionConfidence.ConfidenceType confidenceType = tx.getConfidence().getConfidenceType();
-//
-//            handler.post(new Runnable()
-//            {
-//                @Override
-//                public void run()
-//                {
-//                    final boolean isReceived = amount.signum() > 0;
-//                    final boolean replaying = bestChainHeight < bestChainHeightEver;
-//                    final boolean isReplayedTx = confidenceType == TransactionConfidence.ConfidenceType.BUILDING && replaying;
-//
-//                    if (isReceived && !isReplayedTx)
-//                        notifyCoinsReceived(from, amount);
-//                }
-//            });
-//        }
-//
-//        @Override
-//        public void onCoinsSent(final Wallet wallet, final Transaction tx, final BigInteger prevBalance, final BigInteger newBalance)
-//        {
-//            transactionsReceived.incrementAndGet();
-//        }
-//    };
+    private SharedPreferences sharedPref;
 
-//    private void notifyCoinsReceived(@Nullable final Address from, @Nonnull final BigInteger amount)
-//    {
-//        if (notificationCount == 1)
-//            nm.cancel(NOTIFICATION_ID_COINS_RECEIVED);
-//
-//        notificationCount++;
-//        notificationAccumulatedAmount = notificationAccumulatedAmount.add(amount);
-//        if (from != null && !notificationAddresses.contains(from))
-//            notificationAddresses.add(from);
-//
-//        final int btcPrecision = config.getBtcPrecision();
-//        final int btcShift = config.getBtcShift();
-//        final String btcPrefix = config.getBtcPrefix();
-//
-//        final String packageFlavor = application.applicationPackageFlavor();
-//        final String msgSuffix = packageFlavor != null ? " [" + packageFlavor + "]" : "";
-//
-//        final String tickerMsg = getString(R.string.notification_coins_received_msg,
-//                btcPrefix + ' ' + GenericUtils.formatCoinValue(amount, btcPrecision, btcShift))
-//                + msgSuffix;
-//
-//        final String msg = getString(R.string.notification_coins_received_msg,
-//                btcPrefix + ' ' + GenericUtils.formatCoinValue(notificationAccumulatedAmount, btcPrecision, btcShift))
-//                + msgSuffix;
-//
-//        final StringBuilder text = new StringBuilder();
-//        for (final Address address : notificationAddresses)
-//        {
-//            if (text.length() > 0)
-//                text.append(", ");
-//
-//            final String addressStr = address.toString();
-//            final String label = AddressBookProvider.resolveLabel(getApplicationContext(), addressStr);
-//            text.append(label != null ? label : addressStr);
-//        }
-//
-//        final NotificationCompat.Builder notification = new NotificationCompat.Builder(this);
-//        notification.setSmallIcon(R.drawable.stat_notify_received);
-//        notification.setTicker(tickerMsg);
-//        notification.setContentTitle(msg);
-//        if (text.length() > 0)
-//            notification.setContentText(text);
-//        notification.setContentIntent(PendingIntent.getActivity(this, 0, new Intent(this, WalletActivity.class), 0));
-//        notification.setNumber(notificationCount == 1 ? 0 : notificationCount);
-//        notification.setWhen(System.currentTimeMillis());
-//        notification.setSound(Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.coins_received));
-//        nm.notify(NOTIFICATION_ID_COINS_RECEIVED, notification.getNotification());
-//    }
-//
 
     private final BroadcastReceiver connectivityReceiver = new BroadcastReceiver() {
         private boolean hasConnectivity;
@@ -226,8 +144,24 @@ public class CoinServiceImpl extends Service implements CoinService {
         }
     };
 
+
     private ServerClients getServerClients(Wallet wallet) {
-        return new ServerClients(Constants.DEFAULT_COINS_SERVERS, wallet, connHelper);
+
+        String address = sharedPref.getString(config.PREFS_KEY_SERVER_ADDRESS, "");
+
+        Integer port;
+        try {
+            port = Integer.valueOf(sharedPref.getString(config.PREFS_KEY_SERVER_PORT, ""));
+        }catch (Exception ex){
+            port = 0;
+        }
+
+        List<CoinAddress> servers = ImmutableList.of(
+            new CoinAddress(ReddcoinMain.get(),
+                    new ServerAddress(address, port))
+            );
+        
+        return new ServerClients(servers, wallet, connHelper);
     }
 
     private final BroadcastReceiver tickReceiver = new BroadcastReceiver() {
@@ -299,6 +233,23 @@ public class CoinServiceImpl extends Service implements CoinService {
         intentFilter.addAction(Intent.ACTION_DEVICE_STORAGE_OK);
         registerReceiver(connectivityReceiver, intentFilter);
         registerReceiver(tickReceiver, new IntentFilter(Intent.ACTION_TIME_TICK));
+
+        sharedPref = PreferenceManager.getDefaultSharedPreferences(application.getApplicationContext());
+
+        SharedPreferences.OnSharedPreferenceChangeListener sharedListener = new
+                           SharedPreferences.OnSharedPreferenceChangeListener() {
+            @Override
+            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
+                                                  String key) {
+                Wallet wallet = application.getWallet();
+
+                if (wallet != null)
+                    clients = getServerClients(wallet);
+            }
+        };
+
+        sharedListener.onSharedPreferenceChanged(sharedPref,config.PREFS_KEY_SERVER_ADDRESS);
+        sharedListener.onSharedPreferenceChanged(sharedPref,config.PREFS_KEY_SERVER_PORT);
     }
 
     private ConnectivityHelper getConnectivityHelper(final ConnectivityManager manager) {
