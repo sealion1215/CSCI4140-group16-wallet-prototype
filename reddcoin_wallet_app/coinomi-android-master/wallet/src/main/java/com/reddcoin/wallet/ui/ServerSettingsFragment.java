@@ -79,7 +79,7 @@ public final class ServerSettingsFragment extends Fragment implements SharedPref
     @Override
     public void onDetach() {
         super.onDetach();
-        Log.d("MYCheck", "Fragment onDetach");
+        Log.d("MyDebug", "Fragment onDetach");
 
         SharedPreferences.Editor editor = sharedPreferences.edit();
 

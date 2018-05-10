@@ -46,7 +46,7 @@ import javax.annotation.CheckForNull;
  * @author John L. Jegutanis
  * @author Andreas Schildbach
  */
-public class CoinServiceImpl extends Service implements CoinService {
+public class CoinServiceImpl extends Service implements CoinService, SharedPreferences.OnSharedPreferenceChangeListener {
     private WalletApplication application;
     private Configuration config;
     private ConnectivityManager connManager;
@@ -75,7 +75,7 @@ public class CoinServiceImpl extends Service implements CoinService {
     private static final int MAX_HISTORY_SIZE = Math.max(IDLE_TRANSACTION_TIMEOUT_MIN, IDLE_BLOCK_TIMEOUT_MIN);
     private static final long APPWIDGET_THROTTLE_MS = DateUtils.SECOND_IN_MILLIS;
 
-    private static final Logger log = LoggerFactory.getLogger(CoinService.class);
+    private static final Logger log = LoggerFactory.getLogger(CoinServiceImpl.class);
 
     private SharedPreferences sharedPref;
 
@@ -146,6 +146,7 @@ public class CoinServiceImpl extends Service implements CoinService {
 
 
     private ServerClients getServerClients(Wallet wallet) {
+        System.out.print("MyDebug: ServerClient: get clients");
 
         String address = sharedPref.getString(config.PREFS_KEY_SERVER_ADDRESS, "");
 
@@ -154,6 +155,7 @@ public class CoinServiceImpl extends Service implements CoinService {
             port = Integer.valueOf(sharedPref.getString(config.PREFS_KEY_SERVER_PORT, ""));
         }catch (Exception ex){
             port = 0;
+            log.warn("MyServerClient: no port found. set to default: port = " + port.toString());
         }
 
         List<CoinAddress> servers = ImmutableList.of(
@@ -211,7 +213,7 @@ public class CoinServiceImpl extends Service implements CoinService {
     public void onCreate()
     {
         serviceCreatedAt = System.currentTimeMillis();
-        log.debug(".onCreate()");
+        log.debug("CoinServiceImpl.onCreate()");
 
         super.onCreate();
 
@@ -234,22 +236,35 @@ public class CoinServiceImpl extends Service implements CoinService {
         registerReceiver(connectivityReceiver, intentFilter);
         registerReceiver(tickReceiver, new IntentFilter(Intent.ACTION_TIME_TICK));
 
-        sharedPref = PreferenceManager.getDefaultSharedPreferences(application.getApplicationContext());
+        sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
 
-        SharedPreferences.OnSharedPreferenceChangeListener sharedListener = new
-                           SharedPreferences.OnSharedPreferenceChangeListener() {
-            @Override
-            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
-                                                  String key) {
-                Wallet wallet = application.getWallet();
+        // SharedPreferences.OnSharedPreferenceChangeListener sharedListener = new
+        //                    SharedPreferences.OnSharedPreferenceChangeListener() {
+        //     @Override
+        //     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
+        //                                           String key) {
+        //         log.info("MyDebug: SharedPref: preference change listener");
+        //         Wallet wallet = application.getWallet();
 
-                if (wallet != null)
-                    clients = getServerClients(wallet);
-            }
-        };
+        //         if (wallet != null)
+        //             clients = getServerClients(wallet);
+        //     }
+        // };
 
-        sharedListener.onSharedPreferenceChanged(sharedPref,config.PREFS_KEY_SERVER_ADDRESS);
-        sharedListener.onSharedPreferenceChanged(sharedPref,config.PREFS_KEY_SERVER_PORT);
+        onSharedPreferenceChanged(sharedPref,config.PREFS_KEY_SERVER_ADDRESS);
+        onSharedPreferenceChanged(sharedPref,config.PREFS_KEY_SERVER_PORT);
+
+        sharedPref.registerOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
+                                          String key) {
+        log.info("MyDebug: SharedPref: preference change listener");
+        Wallet wallet = application.getWallet();
+
+        if (wallet != null)
+            clients = getServerClients(wallet);
     }
 
     private ConnectivityHelper getConnectivityHelper(final ConnectivityManager manager) {
@@ -350,6 +365,8 @@ public class CoinServiceImpl extends Service implements CoinService {
     public void onDestroy()
     {
         log.debug(".onDestroy()");
+
+        sharedPref.unregisterOnSharedPreferenceChangeListener(this);
 
         unregisterReceiver(tickReceiver);
         unregisterReceiver(connectivityReceiver);
