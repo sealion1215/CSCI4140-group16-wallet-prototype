@@ -29,6 +29,7 @@ public class FriendsActivity extends BaseWalletActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_friends);
+        friendList = loadFriendList(this);
 
 //        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 //        getSupportActionBar().setDisplayShowHomeEnabled(false);
@@ -64,11 +65,17 @@ public class FriendsActivity extends BaseWalletActivity{
         SharedPreferences.Editor editor = prefs.edit();
 
         int l = list.size();
+        boolean inserted = false;
+        Friend insertElement = new Friend(name, address);
         for(int i = 0; i < l; i++){
             Friend temp = list.get(i);
             if (name.compareToIgnoreCase(temp.name) <= 0){
-
+                inserted = true;
+                list.add(i, insertElement);
             }
+        }
+        if (! inserted){
+            list.add(l, insertElement);
         }
 
         return saveFriendList(list, editor);
@@ -115,9 +122,9 @@ public class FriendsActivity extends BaseWalletActivity{
                 nameText.getText().clear();
                 addressText.getText().clear();
 
-
-
-                Toast.makeText(this, "Added!", Toast.LENGTH_SHORT).show();
+                if (pushFriendList(friendList, friendName, friendAddress, this)) {
+                    Toast.makeText(this, "Added!", Toast.LENGTH_SHORT).show();
+                }
             }else{
                 Toast.makeText(this, "Invalid Address.", Toast.LENGTH_SHORT).show();
             }

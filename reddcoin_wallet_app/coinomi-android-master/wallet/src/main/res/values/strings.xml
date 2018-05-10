@@ -13,7 +13,7 @@
     <string name="action_refresh">Refresh</string>
     <string name="action_new_address">New address</string>
     <string name="action_swap_coins">Swap coins</string>
-    <string name="action_friends">Friends</string>
+    <string name="action_friends">Address Book</string>
 
     <!-- Errors -->
     <string name="error_generic">Error occurred while performing action</string>
@@ -290,7 +290,7 @@
     <string name="about_shapeshift_message">ShapeShift.io is an instant altcoin exchange that provides Bitcoin and altcoin conversion. The platform (available in both web and API flavors) represents the fastest, most efficient way to convert between Bitcoin and dozens of altcoins within the Bitcoin ecosystem. No account needed.</string>
 
     <!--Friends Tab-->
-    <string name="friend_list_title">Friends</string>
+    <string name="friend_list_title">Address Book</string>
     <string name="add_friend">Add</string>
     <string name="friend_name_input">type name</string>
     <string name="friend_address_input">type address</string>
