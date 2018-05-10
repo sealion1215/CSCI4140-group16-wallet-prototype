@@ -20,7 +20,7 @@ public class ServerSettingsActivity extends BaseWalletActivity {
                     .commit();
         }
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(false);
+        //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        //getSupportActionBar().setDisplayShowHomeEnabled(false);
     }
 }

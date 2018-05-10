@@ -1,5 +1,6 @@
 package com.reddcoin.wallet.ui;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -7,13 +8,17 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Toast;
+
+import com.reddcoin.wallet.Constants;
+import com.reddcoin.wallet.R;
 
 import com.reddcoin.core.coins.CoinType;
 import com.reddcoin.core.wallet.WalletPocketHD;
-import com.reddcoin.wallet.Constants;
-import com.reddcoin.wallet.R;
 import com.reddcoin.core.util.GenericUtils;
+import com.reddcoin.core.uri.CoinURI;
+import com.reddcoin.core.uri.CoinURIParseException;
 
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.AddressFormatException;
@@ -23,16 +28,13 @@ import java.util.ArrayList;
 import static com.reddcoin.core.Preconditions.checkNotNull;
 
 public class FriendsActivity extends BaseWalletActivity{
+
+    private static final int REQUEST_CODE_SCAN = 0;
+
     private CoinType type;
+    private ImageButton scanQrCodeButton;
+    private ArrayList<Friend> friendList;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_friends);
-
-//        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-//        getSupportActionBar().setDisplayShowHomeEnabled(false);
-    }
 
     public static class Friend
     {
@@ -43,9 +45,59 @@ public class FriendsActivity extends BaseWalletActivity{
             name = iName;
             address = iAddress;
         }
+
     }
 
-    private ArrayList<Friend> friendList;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_friends);
+
+//        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+//        getSupportActionBar().setDisplayShowHomeEnabled(false);
+
+        scanQrCodeButton = (ImageButton) findViewById(R.id.scan_qr_code);
+        scanQrCodeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                handleScan();
+            }
+        });
+    }
+
+    @Override
+    public void onActivityResult(final int requestCode, final int resultCode, final Intent intent) {
+        if (requestCode == REQUEST_CODE_SCAN) {
+            if (resultCode == Activity.RESULT_OK) {
+                final String input = intent.getStringExtra(ScanActivity.INTENT_EXTRA_RESULT);
+
+                try {
+                    final CoinURI coinUri = new CoinURI(type, input);
+
+                    Address address = coinUri.getAddress();
+                    updateView(address.toString());
+                    // Coin amount = coinUri.getAmount();
+                    // String label = coinUri.getLabel();
+
+                    // updateStateFrom(address, amount, label);
+                    //Toast.makeText(this, address.toString(), Toast.LENGTH_LONG).show();
+
+                } catch (final CoinURIParseException x) {
+                    String error = getResources().getString(R.string.uri_error, x.getMessage());
+                    Toast.makeText(this, error, Toast.LENGTH_LONG).show();
+                }
+            }
+        } else {/* Do nothing */}
+    }
+
+    private void handleScan() {
+        startActivityForResult(new Intent(this, ScanActivity.class), REQUEST_CODE_SCAN);
+    }
+
+    private void updateView(String address) {
+        EditText textField = (EditText) findViewById(R.id.inputAddress);
+        textField.setText(address);
+    }
 
     private static String getPrefArrayString(String arrayName, int index, SharedPreferences prefs){
         return prefs.getString(arrayName + "_" + index, null);
