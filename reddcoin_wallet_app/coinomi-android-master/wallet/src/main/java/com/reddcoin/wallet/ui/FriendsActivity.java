@@ -5,10 +5,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.reddcoin.wallet.Constants;
@@ -34,7 +40,7 @@ public class FriendsActivity extends BaseWalletActivity{
     private CoinType type;
     private ImageButton scanQrCodeButton;
     private ArrayList<Friend> friendList;
-
+    FriendManageAdapter adapter;
     
 
     public static class Friend
@@ -49,12 +55,47 @@ public class FriendsActivity extends BaseWalletActivity{
 
     }
 
+    public class FriendManageAdapter extends ArrayAdapter<Friend>{
+        public FriendManageAdapter(Context context, ArrayList<Friend> list){
+            super(context, 0, list);
+        }
+
+        @Override
+        public View getView(final int position, View convertView, ViewGroup parent){
+            // Get the data item for this position
+            Friend friend = getItem(position);
+            // Check if an existing view is being reused, otherwise inflate the view
+            if (convertView == null) {
+                convertView = LayoutInflater.from(getContext()).inflate(R.layout.activity_friends_item, parent, false);
+            }
+            // Lookup view for data population
+            TextView friendName = (TextView) convertView.findViewById(R.id.friendName);
+            final Button removeButton = (Button) convertView.findViewById(R.id.removeButton);
+
+            // Populate the data into the template view using the data object
+            friendName.setText(friend.name);
+            removeButton.setOnClickListener(new View.OnClickListener() {
+                private int index = position;
+                public void onClick(View v) {
+                    removeFriend(friendList, index, FriendsActivity.this);
+                    FriendManageAdapter.this.notifyDataSetChanged();
+                }
+            });
+
+            // Return the completed view to render on screen
+            return convertView;
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_friends);
-        friendList = loadFriendList(this);
 
+        friendList = loadFriendList(this);
+        adapter = new FriendManageAdapter(this, friendList);
+        ListView listView = (ListView) findViewById(R.id.friendList);
+        listView.setAdapter(adapter);
 //        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 //        getSupportActionBar().setDisplayShowHomeEnabled(false);
 
@@ -125,6 +166,7 @@ public class FriendsActivity extends BaseWalletActivity{
             if (name.compareToIgnoreCase(temp.name) <= 0){
                 inserted = true;
                 list.add(i, insertElement);
+                break;
             }
         }
         if (! inserted){
@@ -143,6 +185,13 @@ public class FriendsActivity extends BaseWalletActivity{
             savePrefElement(Constants.FRIEND_ADDRESS_STORAGE, i, temp.address, editor);
         }
         return editor.commit();
+    }
+
+    private static boolean removeFriend(ArrayList<Friend> list, int index, Context mContext){
+        SharedPreferences prefs = mContext.getSharedPreferences(Constants.FRIEND_PREFERENCE_KEY, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        list.remove(index);
+        return saveFriendList(list, editor);
     }
 
     public static ArrayList<Friend> loadFriendList(Context mContext) {
@@ -176,6 +225,7 @@ public class FriendsActivity extends BaseWalletActivity{
                 addressText.getText().clear();
 
                 if (pushFriendList(friendList, friendName, friendAddress, this)) {
+                    adapter.notifyDataSetChanged();
                     Toast.makeText(this, "Added!", Toast.LENGTH_SHORT).show();
                 }
             }else{
