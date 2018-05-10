@@ -18,6 +18,8 @@ import com.reddcoin.core.util.GenericUtils;
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.AddressFormatException;
 
+import java.util.ArrayList;
+
 import static com.reddcoin.core.Preconditions.checkNotNull;
 
 public class FriendsActivity extends BaseWalletActivity{
@@ -32,33 +34,67 @@ public class FriendsActivity extends BaseWalletActivity{
 //        getSupportActionBar().setDisplayShowHomeEnabled(false);
     }
 
-    public class Friend
+    public static class Friend
     {
         public final String name, address;
 
         public Friend(String iName, String iAddress)
         {
-            name   = iName;
+            name = iName;
             address = iAddress;
         }
     }
 
-    private boolean saveArray(String[] array, String arrayName, Context mContext) {
-        SharedPreferences prefs = mContext.getSharedPreferences(getString(R.string.friend_list_key), Context.MODE_PRIVATE);
+    private ArrayList<Friend> friendList;
+
+    private static String getPrefArrayString(String arrayName, int index, SharedPreferences prefs){
+        return prefs.getString(arrayName + "_" + index, null);
+    }
+
+    private static int getNumOfFriends(SharedPreferences prefs){
+        return prefs.getInt(Constants.FRIEND_SIZE, 0);
+    }
+
+    private static void savePrefElement(String arrayName, int index, String element, SharedPreferences.Editor editor){
+        editor.putString(arrayName + "_" + index, element);
+    }
+
+    private static boolean pushFriendList(ArrayList<Friend> list, String name, String address, Context mContext){
+        SharedPreferences prefs = mContext.getSharedPreferences(Constants.FRIEND_PREFERENCE_KEY, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putInt(arrayName +"_size", array.length);
-        for(int i=0;i<array.length;i++)
-            editor.putString(arrayName + "_" + i, array[i]);
+
+        int l = list.size();
+        for(int i = 0; i < l; i++){
+            Friend temp = list.get(i);
+            if (name.compareToIgnoreCase(temp.name) <= 0){
+
+            }
+        }
+
+        return saveFriendList(list, editor);
+    }
+
+    private static boolean saveFriendList(ArrayList<Friend> list, SharedPreferences.Editor editor){
+        int l = list.size();
+        editor.putInt(Constants.FRIEND_SIZE, l);
+        for (int i = 0; i < l; i++){
+            Friend temp = list.get(i);
+            savePrefElement(Constants.FRIEND_NAME_STORAGE, i, temp.name, editor);
+            savePrefElement(Constants.FRIEND_ADDRESS_STORAGE, i, temp.address, editor);
+        }
         return editor.commit();
     }
 
-    private String[] loadArray(String arrayName, Context mContext) {
-        SharedPreferences prefs = mContext.getSharedPreferences(getString(R.string.friend_list_key), Context.MODE_PRIVATE);
-        int size = prefs.getInt(arrayName + "_size", 0);
-        String array[] = new String[size];
-        for(int i=0;i<size;i++)
-            array[i] = prefs.getString(arrayName + "_" + i, null);
-        return array;
+    public static ArrayList<Friend> loadFriendList(Context mContext) {
+        SharedPreferences prefs = mContext.getSharedPreferences(Constants.FRIEND_PREFERENCE_KEY, Context.MODE_PRIVATE);
+        ArrayList<Friend> arrL = new ArrayList<Friend>();
+
+        int size = getNumOfFriends(prefs);
+        for(int i = 0;i < size;i++){
+            Friend obj = new Friend(getPrefArrayString(Constants.FRIEND_NAME_STORAGE, i, prefs), getPrefArrayString(Constants.FRIEND_ADDRESS_STORAGE, i, prefs));
+            arrL.add(obj);
+        }
+        return arrL;
     }
 
     public void addFriend(View view){
