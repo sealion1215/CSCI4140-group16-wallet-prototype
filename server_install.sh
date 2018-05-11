@@ -1,6 +1,7 @@
 #!/bin/bash
 
 download_electrum_server(){
+	echo "Downloading electrum server..."
 	git clone https://github.com/reddcoin-project/reddcoin-electrum-server.git
 	cd "$server_dir/reddcoin-electrum-server"
 	#sudo "./electrum-configure"
@@ -10,6 +11,7 @@ download_electrum_server(){
 	echo "electrum download finished."
 }
 create_DB_dir(){
+	echo "Creating database directory..."
 	sudo mkdir -p $electrum_DB_dir
 	sudo chmod 777 -R $electrum_DB_dir
 	echo "electrum_DB_dir: $electrum_DB_dir"
@@ -26,6 +28,7 @@ create_DB_dir(){
 	echo "db root created."
 }
 make_reddconf(){
+	echo "Writing reddcoin.conf file..."
 	mkdir -p $reddcoin_conf_dir
 	sudo chmod 777 -R $reddcoin_conf_dir
 	cd $reddcoin_conf_dir
@@ -65,6 +68,7 @@ make_reddconf(){
 	echo "Finish making reddcoin.conf"
 }
 make_electrumconf(){
+	echo "Creating electrum.conf file..."
 	mkdir -p $electrum_conf_dir
 	cd $electrum_conf_dir
 	if [[ ! -e "./electrum.conf" ]]; then
@@ -85,8 +89,9 @@ make_electrumconf(){
 	if [[ -z "$fqdn_IP" ]]; then
 		fqdn_IP="127.0.0.1"
 	fi
+	fqdn_IP="127.0.0.1"
 	sudo echo "host = $fqdn_IP" >> "./electrum.conf"
-	read -p "RPC port of the electrum server(default: 8000): " elect_rpc_port
+	read -p "RPC port(default: 8000): " elect_rpc_port
 	if [[ -z "$elect_rpc_port" ]]; then
 		elect_rpc_port="8000"
 	else 
@@ -98,14 +103,55 @@ make_electrumconf(){
 	fi
 	sudo echo "electrum_rpc_port = $elect_rpc_port" >> "./electrum.conf"
 	sudo echo "password = $rpcpassword" >> "./electrum.conf" 
-	sudo echo "stratum_tcp_port = 50001" >> "./electrum.conf"
-	sudo echo "stratum_tcp_ssl_port = 50002" >> "./electrum.conf"
-	sudo echo "stratum_http_port = 8081" >> "./electrum.conf"
-	sudo echo "stratum_http_ssl_port = 8082" >> "./electrum.conf"
-	sudo echo "report_host = $fqdn_IP" >> "./electrum.conf" 
-	sudo echo "report_stratum_tcp_ssl_port = 50002" >> "./electrum.conf"
-	sudo echo "report_stratum_http_port = 8081" >> "./electrum.conf"
-	sudo echo "report_stratum_http_ssl_port = 8082" >> "./electrum.conf"
+	read -p "Stratum TCP port(default: 50001): " tcp_port
+	if [[ -z "$tcp_port" ]]; then
+		tcp_port="50001"
+	else 
+		check_port $tcp_port
+		$valid_port=$?
+		if [[ $valid_port == 0 ]]; then
+			tcp_port="50001"
+		fi
+	fi
+	sudo echo "stratum_tcp_port = $tcp_port" >> "./electrum.conf"
+	read -p "Stratum TCP SSL port(default: 50002): " tcp_ssl_port
+	if [[ -z "$tcp_ssl_port" ]]; then
+		tcp_ssl_port="50002"
+	else 
+		check_port $tcp_ssl_port
+		$valid_port=$?
+		if [[ $valid_port == 0 ]]; then
+			tcp_ssl_port="50002"
+		fi
+	fi
+	sudo echo "stratum_tcp_ssl_port = $tcp_ssl_port" >> "./electrum.conf"
+	read -p "Stratum HTTP port(default: 8081): " http_port
+	if [[ -z "$http_port" ]]; then
+		http_port="8081"
+	else 
+		check_port $http_port
+		$valid_port=$?
+		if [[ $valid_port == 0 ]]; then
+			http_port="8081"
+		fi
+	fi
+	sudo echo "stratum_http_port = $http_port" >> "./electrum.conf"
+	read -p "Stratum HTTP SSL port(default: 8082): " http_ssl_port
+	if [[ -z "$http_port" ]]; then
+		http_ssl_port="8082"
+	else 
+		check_port $http_ssl_port
+		$valid_port=$?
+		if [[ $valid_port == 0 ]]; then
+			http_ssl_port="8082"
+		fi
+	fi
+	sudo echo "stratum_http_ssl_port = $http_ssl_port" >> "./electrum.conf"
+	sudo echo "#report_host = $fqdn_IP" >> "./electrum.conf"
+	sudo echo "#report_stratum_tcp_port = $tcp_port" >> "./electrum.conf" 
+	sudo echo "#report_stratum_tcp_ssl_port = $tcp_ssl_port" >> "./electrum.conf"
+	sudo echo "#report_stratum_http_port = $http_port" >> "./electrum.conf"
+	sudo echo "#report_stratum_http_ssl_port = $http_ssl_port" >> "./electrum.conf"
 	sudo echo "banner = Welcome to Electrum!" >> "./electrum.conf"
 	sudo echo "banner_file = /etc/electrum.banner" >> "./electrum.conf"
 	IFS='.' read -ra substr_array <<< "$fqdn_IP"
@@ -198,16 +244,15 @@ input_IP_address(){
 		check_port $rdd_IP_port
 		valid_port=$?
 		if [[ $valid_port == 0 ]]; then
-			rdd_IP_port="45444"
+			rdd_IP_port="default"
 		fi
 	fi
 	sudo echo "addnode=$rdd_IP_address:$rdd_IP_port" >> "./reddcoin.conf"
 }
 check_IP(){
-	echo "ipAddress: $1"
 	temp_arg="$1"
 	if [[ ! "$temp_arg" =~ ^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3}) ]]; then
-		echo "Invalid pattern. Default IP would be used."
+		echo "Default IP would be used."
 		return 0
 	else
 		IFS='.' read -ra position <<< "$temp_arg"
@@ -222,7 +267,7 @@ check_IP(){
 check_port(){
 	temp_arg="$1"
 	if [[ ! "$temp_arg" =~ ^([1-9]{1})([0-9]{0,4}){0,1}$ ]]; then
-		echo "Invalid pattern. Default port would be used."
+		echo "Default port would be used."
 		return 0
 	else
 		if [ $temp_arg -lt 0 -o $temp_arg -gt 65535 ]; then
@@ -230,6 +275,16 @@ check_port(){
 		fi
 	fi
 	return 1
+}
+configure_network(){
+	echo "Configuring network settings..."
+	sudo iptables -t nat -A PREROUTING -p tcp --dport "$elect_rpc_port" -j DNAT --to "$fqdn_IP:$elect_rpc_port"
+	sudo iptables -t nat -A PREROUTING -p tcp --dport "$tcp_port" -j DNAT --to "$fqdn_IP:$tcp_port"
+	sudo iptables -t nat -A PREROUTING -p tcp --dport "$tcp_ssl_port" -j DNAT --to "$fqdn_IP:$tcp_ssl_port"
+	sudo iptables -t nat -A PREROUTING -p tcp --dport "$http_port" -j DNAT --to "$fqdn_IP:$http_port"
+	sudo iptables -t nat -A PREROUTING -p tcp --dport "$http_ssl_port" -j DNAT --to "$fqdn_IP:$http_ssl_port"
+	sudo sysctl -w net.ipv4.conf.all.route_localnet=1
+	echo "Configuration finished."
 }
 reddcoind_dir="$HOME/Desktop/testDir"
 server_dir="$HOME/Desktop/test1234567"
@@ -247,6 +302,12 @@ rpcallowip="127.0.0.1"
 rpcport="8332"
 rdd_IP_address="209.239.123.108"
 rdd_IP_port="45444"
+fqdn_IP="127.0.0.1"
+elect_rpc_port="8000"
+tcp_port="50001"
+tcp_ssl_port="50002"
+http_port="8081"
+http_ssl_port="8082"
 echo "Before starting the script, please make sure that the reddcoind server is installed."
 while true; do
 	read -p "reddcoind installed(Y/N): " installed
@@ -272,3 +333,5 @@ download_electrum_server
 create_DB_dir
 make_reddconf
 make_electrumconf
+configure_network
+echo "Installation finished."
