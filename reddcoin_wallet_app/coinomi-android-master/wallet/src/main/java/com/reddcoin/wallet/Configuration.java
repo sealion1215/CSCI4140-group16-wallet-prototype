@@ -50,8 +50,12 @@ public class Configuration {
 
     public static final String PREFS_KEY_DEVICE_COMPATIBLE = "device_compatible";
 
+    public static final String PREFS_KEY_SERVER_ADDRESS = "server_address";
+    public static final String PREFS_KEY_SERVER_PORT = "server_port";
+
     private static final int PREFS_DEFAULT_BTC_SHIFT = 3;
     private static final int PREFS_DEFAULT_BTC_PRECISION = 2;
+
 
     // private static final Logger log = LoggerFactory.getLogger(Configuration.class);
 

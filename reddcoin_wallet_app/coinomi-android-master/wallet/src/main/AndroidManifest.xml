@@ -69,17 +69,17 @@
             android:name=".ui.IntroActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppThemeNoTitleBar"
-            android:windowSoftInputMode="adjustResize"></activity>
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".ui.PasswordConfirmationActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppThemeNoTitleBar"
-            android:windowSoftInputMode="adjustResize"></activity>
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".ui.SignTransactionActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppThemeNoTitleBar"
-            android:windowSoftInputMode="adjustResize"></activity>
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".ui.ScanActivity"
             android:configChanges="orientation|keyboard|keyboardHidden"
@@ -127,7 +127,7 @@
             android:name=".ui.PreviousAddressesActivity"
             android:label="@string/title_activity_previous_addresses"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme"></activity>
+            android:theme="@style/AppTheme" />
         <activity
             android:name=".ui.SettingsActivity"
             android:label="@string/title_activity_settings"
@@ -169,7 +169,10 @@
             android:name=".service.CoinServiceImpl"
             android:exported="false" />
 
-        <activity android:name=".ui.FriendsActivity"></activity>
+        <activity android:name=".ui.FriendsActivity"
+            android:label="@string/friend_list_title"
+            ></activity>
+        <activity android:name=".ui.ServerSettingsActivity"></activity>
     </application>
 
 </manifest>

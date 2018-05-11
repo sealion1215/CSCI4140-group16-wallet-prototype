@@ -87,4 +87,9 @@ public class Constants {
     public static final CoinType DEFAULT_COIN = ReddcoinMain.get();
 
     //public static final String DEFAULT_TEST_COIN_IDS = "test_coin_id";
+
+    public static final String FRIEND_PREFERENCE_KEY = "friends_list_storage";
+    public static final String FRIEND_NAME_STORAGE = "friend_name";
+    public static final String FRIEND_ADDRESS_STORAGE = "friend_address";
+    public static final String FRIEND_SIZE = "friends_total_num";
 }
