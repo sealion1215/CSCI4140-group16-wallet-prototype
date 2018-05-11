@@ -1,6 +1,7 @@
 package com.reddcoin.wallet.ui;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -37,7 +38,7 @@ public class FriendsActivity extends BaseWalletActivity{
 
     private static final int REQUEST_CODE_SCAN = 0;
 
-    private CoinType type;
+    private static CoinType type;
     private ImageButton scanQrCodeButton;
     private ArrayList<Friend> friendList;
     FriendManageAdapter adapter;
@@ -63,24 +64,69 @@ public class FriendsActivity extends BaseWalletActivity{
         @Override
         public View getView(final int position, View convertView, ViewGroup parent){
             // Get the data item for this position
-            Friend friend = getItem(position);
+            final Friend friend = getItem(position);
             // Check if an existing view is being reused, otherwise inflate the view
             if (convertView == null) {
                 convertView = LayoutInflater.from(getContext()).inflate(R.layout.activity_friends_item, parent, false);
             }
             // Lookup view for data population
             TextView friendName = (TextView) convertView.findViewById(R.id.friendName);
-            final Button removeButton = (Button) convertView.findViewById(R.id.removeButton);
+//            final Button removeButton = (Button) convertView.findViewById(R.id.removeButton);
 
             // Populate the data into the template view using the data object
             friendName.setText(friend.name);
-            removeButton.setOnClickListener(new View.OnClickListener() {
+            friendName.setOnClickListener(new View.OnClickListener(){
+                private Friend fd = friend;
                 private int index = position;
-                public void onClick(View v) {
-                    removeFriend(friendList, index, FriendsActivity.this);
-                    FriendManageAdapter.this.notifyDataSetChanged();
+                public void onClick(View v){
+                    final Dialog myDlg = new Dialog(FriendsActivity.this);
+                    myDlg.setContentView(R.layout.activity_friends_popup);
+                    myDlg.show();
+
+                    Button saveBtn = (Button) myDlg.findViewById(R.id.saveButton);
+                    Button removeBtn = (Button) myDlg.findViewById(R.id.removeButton);
+                    EditText nameText = myDlg.findViewById(R.id.inputName);
+                    EditText addressText = myDlg.findViewById(R.id.inputAddress);
+                    nameText.setText(fd.name);
+                    addressText.setText(fd.address);
+
+                    saveBtn.setOnClickListener(new View.OnClickListener(){
+                        public void onClick(View v){
+                            addFriend(friendList, nameText.getText().toString(), addressText.getText().toString(),
+                                    () -> {
+                                        FriendManageAdapter.this.notifyDataSetChanged();
+                                        Toast.makeText(FriendsActivity.this, "Saved!", Toast.LENGTH_SHORT).show();
+                                        myDlg.cancel();
+                                    },
+                                    () -> {
+                                        friendList.remove(index);
+                                    },
+                                    () -> {
+                                        Toast.makeText(FriendsActivity.this, "Invalid Address.", Toast.LENGTH_SHORT).show();
+                                    },
+                                    FriendsActivity.this);
+                            Toast.makeText(FriendsActivity.this, "Saved", Toast.LENGTH_SHORT).show();
+                            myDlg.cancel();
+                        }
+                    });
+
+                    removeBtn.setOnClickListener(new View.OnClickListener(){
+                        public void onClick(View v){
+                            removeFriend(friendList, index, FriendsActivity.this);
+                            FriendManageAdapter.this.notifyDataSetChanged();
+                            Toast.makeText(FriendsActivity.this, "Removed", Toast.LENGTH_SHORT).show();
+                            myDlg.cancel();
+                        }
+                    });
                 }
             });
+//            removeButton.setOnClickListener(new View.OnClickListener() {
+//                private int index = position;
+//                public void onClick(View v) {
+//                    removeFriend(friendList, index, FriendsActivity.this);
+//                    FriendManageAdapter.this.notifyDataSetChanged();
+//                }
+//            });
 
             // Return the completed view to render on screen
             return convertView;
@@ -206,13 +252,37 @@ public class FriendsActivity extends BaseWalletActivity{
         return arrL;
     }
 
-    public void addFriend(View view){
+    private interface Callback{
+        void exec();
+    }
+
+    //for public usage
+    public static void addFriend(ArrayList<Friend> friendList, String friendName, String friendAddress, Callback success, Callback invalid, BaseWalletActivity activity){
+        addFriend(friendList, friendName, friendAddress, success,  null, invalid, activity);
+    }
+
+    public static void addFriend(ArrayList<Friend> friendList, String friendName, String friendAddress, Callback success, Callback beforePush, Callback invalid, BaseWalletActivity activity){
+        if (! (friendName.isEmpty() || friendAddress.isEmpty()) ){
+            if(validate(friendAddress, activity)){
+                if(beforePush != null)
+                    beforePush.exec();
+                if (pushFriendList(friendList, friendName, friendAddress, activity)) {
+                    success.exec();
+                }
+            }else{
+                invalid.exec();
+            }
+        }
+    }
+
+    public void addFriendClick(View view){
         EditText nameText = findViewById(R.id.inputName);
         EditText addressText = findViewById(R.id.inputAddress);
         String friendName = nameText.getText().toString();
         String friendAddress = addressText.getText().toString();
-        if (! (friendName.isEmpty() || friendAddress.isEmpty()) ){
-            if(validate(friendAddress)){
+
+        addFriend(friendList, friendName, friendAddress,
+            () -> {
                 //hide keyboard
                 View temp = this.getCurrentFocus();
                 if (temp != null) {
@@ -224,22 +294,22 @@ public class FriendsActivity extends BaseWalletActivity{
                 nameText.getText().clear();
                 addressText.getText().clear();
 
-                if (pushFriendList(friendList, friendName, friendAddress, this)) {
-                    adapter.notifyDataSetChanged();
-                    Toast.makeText(this, "Added!", Toast.LENGTH_SHORT).show();
-                }
-            }else{
+                adapter.notifyDataSetChanged();
+                Toast.makeText(this, "Added!", Toast.LENGTH_SHORT).show();
+            },
+            () -> {
                 Toast.makeText(this, "Invalid Address.", Toast.LENGTH_SHORT).show();
-            }
-        }
+            },
+            this
+        );
     }
 
-    private boolean validate(String addressStr){
+    private static boolean validate(String addressStr, BaseWalletActivity activity){
         addressStr = GenericUtils.fixAddress(addressStr);
         if(type == null){
-            Intent intent = getIntent();
+            Intent intent = activity.getIntent();
             String accountId = intent.getStringExtra(WalletActivity.EXTRA_ACCOUNT);
-            WalletPocketHD pocket = (WalletPocketHD) getWalletApplication().getAccount(accountId);
+            WalletPocketHD pocket = (WalletPocketHD) activity.getWalletApplication().getAccount(accountId);
             type = pocket.getCoinType();
         }
 
