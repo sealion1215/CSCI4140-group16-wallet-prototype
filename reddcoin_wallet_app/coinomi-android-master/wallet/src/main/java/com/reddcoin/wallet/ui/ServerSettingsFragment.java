@@ -21,7 +21,7 @@ import com.reddcoin.wallet.WalletApplication;
 /**
  * @author Remo Glauser
  */
-public final class ServerSettingsFragment extends Fragment implements SharedPreferences.OnSharedPreferenceChangeListener {
+public final class ServerSettingsFragment extends Fragment {//implements SharedPreferences.OnSharedPreferenceChangeListener {
     private Activity activity;
     private WalletApplication application;
     private Configuration config;
@@ -89,47 +89,47 @@ public final class ServerSettingsFragment extends Fragment implements SharedPref
 
     }
 
-    @Override
-    public void onSharedPreferenceChanged(final SharedPreferences sharedPreferences, final String key) {
-        // if (Configuration.PREFS_KEY_EXCHANGE_CURRENCY.equals(key)) {
-        //     defaultCurrency = config.getExchangeCurrencyCode();
-
-        //     updateView();
-        // }
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        //unregister the preferenceChange listener
-        //getPreferenceScreen().getSharedPreferences()
-        //        .registerOnSharedPreferenceChangeListener(this);
-    }
-
-
     // @Override
-    // public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-    //     Preference preference = findPreference(key);
-    //     if (preference instanceof ListPreference) {
-    //         ListPreference listPreference = (ListPreference) preference;
-    //         int prefIndex = listPreference.findIndexOfValue(sharedPreferences.getString(key, ""));
-    //         if (prefIndex >= 0) {
-    //             preference.setSummary(listPreference.getEntries()[prefIndex]);
-    //         }
-    //     } else if (preference instanceof EditTextPreference){
-    //         EditTextPreference editText = (EditTextPreference) preference;
-    //         preference.setSummary(editText.getText());           
-    //     }else {
-    //         preference.setSummary(sharedPreferences.getString(key, ""));
+    // public void onSharedPreferenceChanged(final SharedPreferences sharedPreferences, final String key) {
+    //     // if (Configuration.PREFS_KEY_EXCHANGE_CURRENCY.equals(key)) {
+    //     //     defaultCurrency = config.getExchangeCurrencyCode();
 
-    //     }
+    //     //     updateView();
+    //     // }
     // }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-        //unregister the preference change listener
-        //getPreferenceScreen().getSharedPreferences()
-        //        .unregisterOnSharedPreferenceChangeListener(this);
-    }
+    // @Override
+    // public void onResume() {
+    //     super.onResume();
+    //     //unregister the preferenceChange listener
+    //     //getPreferenceScreen().getSharedPreferences()
+    //     //        .registerOnSharedPreferenceChangeListener(this);
+    // }
+
+
+    // // @Override
+    // // public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+    // //     Preference preference = findPreference(key);
+    // //     if (preference instanceof ListPreference) {
+    // //         ListPreference listPreference = (ListPreference) preference;
+    // //         int prefIndex = listPreference.findIndexOfValue(sharedPreferences.getString(key, ""));
+    // //         if (prefIndex >= 0) {
+    // //             preference.setSummary(listPreference.getEntries()[prefIndex]);
+    // //         }
+    // //     } else if (preference instanceof EditTextPreference){
+    // //         EditTextPreference editText = (EditTextPreference) preference;
+    // //         preference.setSummary(editText.getText());           
+    // //     }else {
+    // //         preference.setSummary(sharedPreferences.getString(key, ""));
+
+    // //     }
+    // // }
+
+    // @Override
+    // public void onPause() {
+    //     super.onPause();
+    //     //unregister the preference change listener
+    //     //getPreferenceScreen().getSharedPreferences()
+    //     //        .unregisterOnSharedPreferenceChangeListener(this);
+    // }
 }

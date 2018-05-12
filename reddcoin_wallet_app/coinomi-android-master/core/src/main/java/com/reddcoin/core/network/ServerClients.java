@@ -94,7 +94,10 @@ public class ServerClients {
     public void resetConnections() {
         for (final CoinType type : connections.keySet()) {
             ServerClient connection = connections.get(type);
-            if (connection.isConnected()) connection.resetConnection();
+            if (connection.isConnected()) {
+                log.info("Reset connection {}", type.getName());
+                connection.resetConnection();
+            };
         }
     }
 }

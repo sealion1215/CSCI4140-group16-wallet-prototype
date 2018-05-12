@@ -78,7 +78,10 @@ public class CoinServiceImpl extends Service implements CoinService, SharedPrefe
     private static final Logger log = LoggerFactory.getLogger(CoinServiceImpl.class);
 
     private SharedPreferences sharedPref;
+    private ServiceRestart serviceRestart = new ServiceRestart();
 
+    // public abstract void onServiceUpdate();
+    // // after internal update of clients. restart intent.
 
     private final BroadcastReceiver connectivityReceiver = new BroadcastReceiver() {
         private boolean hasConnectivity;
@@ -143,6 +146,30 @@ public class CoinServiceImpl extends Service implements CoinService, SharedPrefe
             }
         }
     };
+
+
+    private class ServiceRestart{
+        private Intent reStartIntent;
+        private int reStartFlag;
+        private int reStartID;
+
+        void setIntent(Intent intent){
+            reStartIntent = intent;
+        }
+
+        void setFlag(int flag){
+            reStartFlag = flag;
+        }
+
+        void setID(int id){
+            reStartID = id;
+        }
+
+        void doRestart(){
+            onCreate(); /* re-create service */ 
+            onStartCommand(reStartIntent, reStartFlag, reStartID);
+        }         
+    }
 
 
     private ServerClients getServerClients(Wallet wallet) {
@@ -251,8 +278,8 @@ public class CoinServiceImpl extends Service implements CoinService, SharedPrefe
         //     }
         // };
 
-        onSharedPreferenceChanged(sharedPref,config.PREFS_KEY_SERVER_ADDRESS);
-        onSharedPreferenceChanged(sharedPref,config.PREFS_KEY_SERVER_PORT);
+        //onSharedPreferenceChanged(sharedPref,config.PREFS_KEY_SERVER_ADDRESS);
+        //onSharedPreferenceChanged(sharedPref,config.PREFS_KEY_SERVER_PORT);
 
         sharedPref.registerOnSharedPreferenceChangeListener(this);
     }
@@ -261,11 +288,23 @@ public class CoinServiceImpl extends Service implements CoinService, SharedPrefe
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
                                           String key) {
         log.info("MyDebug: SharedPref: preference change listener");
-        Wallet wallet = application.getWallet();
+        if(key == config.PREFS_KEY_SERVER_ADDRESS || key == config.PREFS_KEY_SERVER_PORT) {
 
-        if (wallet != null)
-            clients = getServerClients(wallet);
+            Wallet wallet = application.getWallet();
+
+            if (wallet != null) {
+                onDestroy();
+
+                clients = getServerClients(wallet);
+                log.info("MyDebug: SharedPref: client changed");
+
+                serviceRestart.doRestart();
+                clients.resetConnections();
+                clients.ping();
+            }
+        }
     }
+
 
     private ConnectivityHelper getConnectivityHelper(final ConnectivityManager manager) {
         return new ConnectivityHelper() {
@@ -328,6 +367,9 @@ public class CoinServiceImpl extends Service implements CoinService, SharedPrefe
 
                         if (clients != null) {
                             clients.startAsync(pocket);
+                            serviceRestart.setIntent(intent);
+                            serviceRestart.setFlag(flags);
+                            serviceRestart.setID(startId);
                         }
                     } else {
                         log.warn("Tried to start a service for account id {} but no pocket found.",
