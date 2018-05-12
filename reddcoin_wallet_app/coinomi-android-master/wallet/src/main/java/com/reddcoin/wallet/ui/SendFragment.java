@@ -310,12 +310,13 @@ public class SendFragment extends Fragment {
                             FriendsActivity.addFriend(friendList, name, newAddress,
                                     () -> {
                                         Toast.makeText(getActivity(), "Saved to Address Book!", Toast.LENGTH_SHORT).show();
+                                        ((BaseWalletActivity) getActivity()).hideKeyboard();
                                         myDlg.cancel();
                                     },
                                     () -> {
                                         Toast.makeText(getActivity(), "Invalid Address.", Toast.LENGTH_SHORT).show();
                                     },
-                                    (BaseWalletActivity) getActivity()
+                                    (BaseWalletActivity) getActivity(), true
                             );
                         }
                     }

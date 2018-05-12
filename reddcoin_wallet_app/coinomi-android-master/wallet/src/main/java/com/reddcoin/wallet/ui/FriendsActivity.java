@@ -267,14 +267,21 @@ public class FriendsActivity extends BaseWalletActivity{
         void exec();
     }
 
-    //for public usage
+    public static void addFriend(ArrayList<Friend> friendList, String friendName, String friendAddress, Callback success, Callback invalid, BaseWalletActivity activity, boolean ignoreValidate){
+        addFriend(friendList, friendName, friendAddress, success,  null, invalid, activity, ignoreValidate);
+    }
+
     public static void addFriend(ArrayList<Friend> friendList, String friendName, String friendAddress, Callback success, Callback invalid, BaseWalletActivity activity){
         addFriend(friendList, friendName, friendAddress, success,  null, invalid, activity);
     }
 
     public static void addFriend(ArrayList<Friend> friendList, String friendName, String friendAddress, Callback success, Callback beforePush, Callback invalid, BaseWalletActivity activity){
+        addFriend(friendList, friendName, friendAddress, success,  beforePush, invalid, activity, false);
+    }
+
+    public static void addFriend(ArrayList<Friend> friendList, String friendName, String friendAddress, Callback success, Callback beforePush, Callback invalid, BaseWalletActivity activity, boolean ignoreValidate){
         if (! (friendName.isEmpty() || friendAddress.isEmpty()) ){
-            if(validate(friendAddress, activity)){
+            if(ignoreValidate || validate(friendAddress, activity)){
                 if(beforePush != null)
                     beforePush.exec();
                 if (pushFriendList(friendList, friendName, friendAddress, activity)) {
