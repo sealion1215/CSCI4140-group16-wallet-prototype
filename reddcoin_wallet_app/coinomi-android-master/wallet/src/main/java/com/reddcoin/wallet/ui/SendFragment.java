@@ -1,9 +1,11 @@
 package com.reddcoin.wallet.ui;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.DataSetObserver;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -22,10 +24,13 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.FilterQueryProvider;
 import android.widget.ImageButton;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -61,6 +66,7 @@ import org.bitcoinj.utils.Threading;
 // import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.annotation.Nullable;
 
@@ -95,6 +101,9 @@ public class SendFragment extends Fragment {
     private TextView amountWarning;
     private ImageButton scanQrCodeButton;
     private Button sendConfirmButton;
+
+    private Button selectAddressBtn;
+    private Dialog myDlg;
 
     private State state = State.INPUT;
     private Address address;
@@ -178,6 +187,39 @@ public class SendFragment extends Fragment {
         }
     }
 
+    public class SelectFriendAdapter extends ArrayAdapter<FriendsActivity.Friend> {
+        public SelectFriendAdapter(Context context, ArrayList<FriendsActivity.Friend> list){
+            super(context, 0, list);
+        }
+
+        @Override
+        public View getView(final int position, View convertView, ViewGroup parent){
+            // Get the data item for this position
+            final FriendsActivity.Friend friend = getItem(position);
+            // Check if an existing view is being reused, otherwise inflate the view
+            if (convertView == null) {
+                convertView = LayoutInflater.from(getContext()).inflate(R.layout.activity_friends_item, parent, false);
+            }
+            // Lookup view for data population
+            TextView friendName = (TextView) convertView.findViewById(R.id.friendName);
+//            final Button removeButton = (Button) convertView.findViewById(R.id.removeButton);
+
+            // Populate the data into the template view using the data object
+            friendName.setText(friend.name);
+            friendName.setOnClickListener(new View.OnClickListener() {
+                private String address = friend.address;
+
+                public void onClick(View v) {
+                    sendToAddressView.setText(address);
+                    myDlg.cancel();
+                }
+            });
+
+            // Return the completed view to render on screen
+            return convertView;
+        }
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -225,6 +267,22 @@ public class SendFragment extends Fragment {
                     handleSendConfirm();
                 else
                     requestFocusFirst();
+            }
+        });
+
+        selectAddressBtn = view.findViewById(R.id.address_button);
+        selectAddressBtn.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                ArrayList<FriendsActivity.Friend> friendList = FriendsActivity.loadFriendList(getActivity());
+                myDlg = new Dialog(getActivity());
+                myDlg.setContentView(R.layout.fragment_send_address_list);
+
+                ListView listView = myDlg.findViewById(R.id.friendList);
+                SelectFriendAdapter adapter = new SelectFriendAdapter(getActivity(), friendList);
+                listView.setAdapter(adapter);
+
+                myDlg.show();
             }
         });
 

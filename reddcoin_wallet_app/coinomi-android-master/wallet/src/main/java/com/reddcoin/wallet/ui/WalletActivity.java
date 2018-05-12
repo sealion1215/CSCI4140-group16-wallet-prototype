@@ -17,6 +17,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import com.reddcoin.core.coins.CoinType;
@@ -533,4 +534,5 @@ final public class WalletActivity extends BaseWalletActivity implements
             }
         }
     }
+
 }

@@ -265,7 +265,7 @@ public class FriendsActivity extends BaseWalletActivity{
         return arrL;
     }
 
-    private interface Callback{
+    public interface Callback{
         void exec();
     }
 
