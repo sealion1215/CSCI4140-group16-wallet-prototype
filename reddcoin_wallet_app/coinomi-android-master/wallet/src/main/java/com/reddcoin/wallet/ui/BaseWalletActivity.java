@@ -1,8 +1,11 @@
 package com.reddcoin.wallet.ui;
 
+import android.content.Context;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 
 import com.reddcoin.core.coins.CoinType;
 import com.reddcoin.core.wallet.Wallet;
@@ -67,5 +70,13 @@ abstract public class BaseWalletActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         getWalletApplication().touchLastStop();
+    }
+
+    public void hideKeyboard(){
+        View temp = this.getCurrentFocus();
+        if (temp != null) {
+            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(temp.getWindowToken(), 0);
+        }
     }
 }
