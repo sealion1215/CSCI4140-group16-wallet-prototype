@@ -43,7 +43,8 @@ public class FriendsActivity extends BaseWalletActivity{
     private ImageButton scanQrCodeButton;
     private ArrayList<Friend> friendList;
     FriendManageAdapter adapter;
-    
+
+    public Dialog myDlg;
 
     public static class Friend
     {
@@ -80,12 +81,13 @@ public class FriendsActivity extends BaseWalletActivity{
                 private Friend fd = friend;
                 private int index = position;
                 public void onClick(View v){
-                    final Dialog myDlg = new Dialog(FriendsActivity.this);
+                    myDlg = new Dialog(FriendsActivity.this);
                     myDlg.setContentView(R.layout.activity_friends_popup);
                     myDlg.show();
 
                     Button saveBtn = (Button) myDlg.findViewById(R.id.saveButton);
                     Button removeBtn = (Button) myDlg.findViewById(R.id.removeButton);
+                    ImageButton qrCodeBtn = myDlg.findViewById(R.id.scan_qr_code);
                     EditText nameText = myDlg.findViewById(R.id.inputName);
                     EditText addressText = myDlg.findViewById(R.id.inputAddress);
                     nameText.setText(fd.name);
@@ -120,6 +122,12 @@ public class FriendsActivity extends BaseWalletActivity{
                             myDlg.cancel();
                         }
                     });
+
+                    qrCodeBtn.setOnClickListener(new View.OnClickListener(){
+                        public void onClick(View v){
+                            handleScan(true);
+                        }
+                    });
                 }
             });
 //            removeButton.setOnClickListener(new View.OnClickListener() {
@@ -151,14 +159,14 @@ public class FriendsActivity extends BaseWalletActivity{
         scanQrCodeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                handleScan();
+                handleScan(false);
             }
         });
     }
 
     @Override
     public void onActivityResult(final int requestCode, final int resultCode, final Intent intent) {
-        if (requestCode == REQUEST_CODE_SCAN) {
+        if (requestCode == REQUEST_CODE_SCAN || requestCode == REQUEST_CODE_SCAN_V2) {
             if (resultCode == Activity.RESULT_OK) {
                 final String input = intent.getStringExtra(ScanActivity.INTENT_EXTRA_RESULT);
 
@@ -166,7 +174,10 @@ public class FriendsActivity extends BaseWalletActivity{
                     final CoinURI coinUri = new CoinURI(type, input);
 
                     Address address = coinUri.getAddress();
-                    updateView(address.toString(), (EditText) findViewById(R.id.inputAddress));
+                    if (requestCode == REQUEST_CODE_SCAN)
+                        updateView(address.toString(), (EditText) findViewById(R.id.inputAddress));
+                    else
+                        updateView(address.toString(), (EditText) myDlg.findViewById(R.id.inputAddress));
                     // Coin amount = coinUri.getAmount();
                     // String label = coinUri.getLabel();
 
@@ -181,8 +192,9 @@ public class FriendsActivity extends BaseWalletActivity{
         } else {/* Do nothing */}
     }
 
-    private void handleScan() {
-        startActivityForResult(new Intent(this, ScanActivity.class), REQUEST_CODE_SCAN);
+    private void handleScan(boolean isEdit) {
+        final int code = isEdit ? REQUEST_CODE_SCAN_V2 : REQUEST_CODE_SCAN;
+        startActivityForResult(new Intent(this, ScanActivity.class), code);
     }
 
     private void updateView(String address, EditText textField) {
