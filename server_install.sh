@@ -49,7 +49,7 @@ make_reddconf(){
 	fi
 	sudo echo "rpcpassword=$rpcpassword" >> "./reddcoin.conf"
 	#test directory
-	#sudo echo "datadir=/media/sealion1215/OS/reddcoin/.reddcoin" >> "./reddcoin.conf"
+	sudo echo "datadir=/media/sealion1215/OS/reddcoin/.reddcoin" >> "./reddcoin.conf"
 	sudo echo "rpcallowip=$rpcallowip" >> "./reddcoin.conf"
 	sudo echo "rpcport=$rpcport" >> "./reddcoin.conf" 
 	sudo echo "daemon=1" >> "./reddcoin.conf"
@@ -85,11 +85,16 @@ make_electrumconf(){
 		fi
 	done
 	sudo echo "username = $sys_username" >> "./electrum.conf"
-	read -p "Host Address to be reached from outside(default: 127.0.0.1): " fqdn_IP
+	read -p "Host IP Address to be reached from outside(default: 127.0.0.1): " fqdn_IP
 	if [[ -z "$fqdn_IP" ]]; then
 		fqdn_IP="127.0.0.1"
+	else 
+		check_IP $fqdn_IP
+		$valid_IP=$?
+		if [[ $valid_IP == 0 ]]; then
+			fqdn_IP="127.0.0.1"
+		fi
 	fi
-	fqdn_IP="127.0.0.1"
 	sudo echo "host = $fqdn_IP" >> "./electrum.conf"
 	read -p "RPC port(default: 8000): " elect_rpc_port
 	if [[ -z "$elect_rpc_port" ]]; then
@@ -137,7 +142,7 @@ make_electrumconf(){
 	fi
 	sudo echo "stratum_http_port = $http_port" >> "./electrum.conf"
 	read -p "Stratum HTTP SSL port(default: 8082): " http_ssl_port
-	if [[ -z "$http_port" ]]; then
+	if [[ -z "$http_ssl_port" ]]; then
 		http_ssl_port="8082"
 	else 
 		check_port $http_ssl_port
@@ -169,7 +174,7 @@ make_electrumconf(){
 			if [ $crt_prepared == "Y" -o $crt_prepared == "N" ]; then	
 				break
 			else
-				echo "invalid crt_prepared"
+				echo "invalid input"
 			fi
 		fi
 	done
@@ -186,6 +191,8 @@ make_electrumconf(){
 				break
 			fi
 		done
+		crt_location=${crt_location//"~"/$HOME}
+		key_location=${key_location//"~"/$HOME}
 	else
 		make_crt_key
 		crt_location="$server_dir/reddcoin-electrum-server/electrum-server.crt"
@@ -278,11 +285,8 @@ check_port(){
 }
 configure_network(){
 	echo "Configuring network settings..."
-	sudo iptables -t nat -A PREROUTING -p tcp --dport "$elect_rpc_port" -j DNAT --to "$fqdn_IP:$elect_rpc_port"
-	sudo iptables -t nat -A PREROUTING -p tcp --dport "$tcp_port" -j DNAT --to "$fqdn_IP:$tcp_port"
-	sudo iptables -t nat -A PREROUTING -p tcp --dport "$tcp_ssl_port" -j DNAT --to "$fqdn_IP:$tcp_ssl_port"
-	sudo iptables -t nat -A PREROUTING -p tcp --dport "$http_port" -j DNAT --to "$fqdn_IP:$http_port"
-	sudo iptables -t nat -A PREROUTING -p tcp --dport "$http_ssl_port" -j DNAT --to "$fqdn_IP:$http_ssl_port"
+	tcp_port_cmd="sudo iptables -t nat -A PREROUTING -p tcp --dport $tcp_port -j DNAT --to $fqdn_IP:$tcp_port"
+	eval $tcp_port_cmd
 	sudo sysctl -w net.ipv4.conf.all.route_localnet=1
 	echo "Configuration finished."
 }
