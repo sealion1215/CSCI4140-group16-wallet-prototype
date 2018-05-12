@@ -8,13 +8,12 @@ download_electrum_server(){
 	sudo apt-get install python-setuptools python-openssl python-leveldb libleveldb-dev
 	sudo easy_install jsonrpclib irc plyvel
 	sudo python "./setup.py" install
-	echo "electrum download finished."
+	echo "electrum download finished.\n"
 }
 create_DB_dir(){
 	echo "Creating database directory..."
 	sudo mkdir -p $electrum_DB_dir
 	sudo chmod 777 -R $electrum_DB_dir
-	echo "electrum_DB_dir: $electrum_DB_dir"
 	cd $electrum_DB_dir
 	subdir=( "./addr" "./hist" "./undo" "./utxo" )
 	for name in "${subdir[@]}"; do
@@ -25,7 +24,7 @@ create_DB_dir(){
 		sudo chmod 666 "./LOCK"
 		cd "../"
 	done
-	echo "db root created."
+	echo "db root created.\n"
 }
 make_reddconf(){
 	echo "Writing reddcoin.conf file..."
@@ -65,7 +64,7 @@ make_reddconf(){
 	do
 		input_IP_address
 	done
-	echo "Finish making reddcoin.conf"
+	echo "Finish making reddcoin.conf\n"
 }
 make_electrumconf(){
 	echo "Creating electrum.conf file..."
@@ -222,7 +221,7 @@ make_electrumconf(){
 	fi
 	sudo touch "$electrum_logfile_dir"
 	sudo chmod 666 "$electrum_logfile_dir"
-	echo "Finish making electrum.conf"
+	echo "Finish making electrum.conf\n"
 }
 make_crt_key(){
 	cd "$server_dir/reddcoin-electrum-server"
@@ -231,7 +230,7 @@ make_crt_key(){
 	rm ./server.pass.key
 	openssl req -new -key ./server.key -out ./server.csr
 	openssl x509 -req -days 730 -in ./server.csr -signkey ./server.key -out ./server.crt
-	echo "New certificate and its signing key created."
+	echo "New certificate and its signing key created.\n"
 	cd -
 }
 input_IP_address(){
@@ -288,7 +287,7 @@ configure_network(){
 	tcp_port_cmd="sudo iptables -t nat -A PREROUTING -p tcp --dport $tcp_port -j DNAT --to $fqdn_IP:$tcp_port"
 	eval $tcp_port_cmd
 	sudo sysctl -w net.ipv4.conf.all.route_localnet=1
-	echo "Configuration finished."
+	echo "Configuration finished.\n"
 }
 reddcoind_dir="$HOME/Desktop/testDir"
 server_dir="$HOME/Desktop/test1234567"
@@ -312,7 +311,7 @@ tcp_port="50001"
 tcp_ssl_port="50002"
 http_port="8081"
 http_ssl_port="8082"
-echo "Before starting the script, please make sure that the reddcoind server is installed."
+echo "Before starting the script, please make sure that the reddcoind server v1.4.1.0,  v2.0.0.0 or v2.0.1.2 is installed."
 while true; do
 	read -p "reddcoind installed(Y/N): " installed
 	if [[ ! -z "$installed" ]]; then 
@@ -322,7 +321,7 @@ while true; do
 	fi
 done
 if [[ $installed == "N" ]]; then
-	echo "Please install reddcoind server from https://github.com/reddcoin-project/reddcoin/releases/tag/v2.0.0.0"
+	echo "Please install reddcoind server from https://github.com/reddcoin-project/reddcoin/releases/tag/v2.0.1.2"
 	exit
 fi
 read -p "Target Directory(default: $server_dir): " server_dir
