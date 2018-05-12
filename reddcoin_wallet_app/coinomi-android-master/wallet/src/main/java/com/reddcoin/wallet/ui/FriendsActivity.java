@@ -37,6 +37,7 @@ import static com.reddcoin.core.Preconditions.checkNotNull;
 public class FriendsActivity extends BaseWalletActivity{
 
     private static final int REQUEST_CODE_SCAN = 0;
+    private static final int REQUEST_CODE_SCAN_V2 = 1;
 
     private static CoinType type;
     private ImageButton scanQrCodeButton;
@@ -95,8 +96,9 @@ public class FriendsActivity extends BaseWalletActivity{
                             addFriend(friendList, nameText.getText().toString(), addressText.getText().toString(),
                                     () -> {
                                         FriendManageAdapter.this.notifyDataSetChanged();
-                                        Toast.makeText(FriendsActivity.this, "Saved!", Toast.LENGTH_SHORT).show();
+                                        hideKeyboard();
                                         myDlg.cancel();
+                                        Toast.makeText(FriendsActivity.this, "Saved!", Toast.LENGTH_SHORT).show();
                                     },
                                     () -> {
                                         friendList.remove(index);
@@ -164,7 +166,7 @@ public class FriendsActivity extends BaseWalletActivity{
                     final CoinURI coinUri = new CoinURI(type, input);
 
                     Address address = coinUri.getAddress();
-                    updateView(address.toString());
+                    updateView(address.toString(), (EditText) findViewById(R.id.inputAddress));
                     // Coin amount = coinUri.getAmount();
                     // String label = coinUri.getLabel();
 
@@ -183,8 +185,7 @@ public class FriendsActivity extends BaseWalletActivity{
         startActivityForResult(new Intent(this, ScanActivity.class), REQUEST_CODE_SCAN);
     }
 
-    private void updateView(String address) {
-        EditText textField = (EditText) findViewById(R.id.inputAddress);
+    private void updateView(String address, EditText textField) {
         textField.setText(address);
     }
 
@@ -284,11 +285,7 @@ public class FriendsActivity extends BaseWalletActivity{
         addFriend(friendList, friendName, friendAddress,
             () -> {
                 //hide keyboard
-                View temp = this.getCurrentFocus();
-                if (temp != null) {
-                    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-                }
+                hideKeyboard();
 
                 //clear input box
                 nameText.getText().clear();
@@ -320,4 +317,5 @@ public class FriendsActivity extends BaseWalletActivity{
             return false;
         }
     }
+
 }
