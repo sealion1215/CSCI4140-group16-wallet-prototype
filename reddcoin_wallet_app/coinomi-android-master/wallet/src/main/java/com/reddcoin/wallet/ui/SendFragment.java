@@ -3,6 +3,7 @@ package com.reddcoin.wallet.ui;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.DataSetObserver;
@@ -24,6 +25,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -106,6 +109,7 @@ public class SendFragment extends Fragment {
     private Button selectAddressBtn;
     private Button saveNewAddressBtn;
     private Dialog myDlg;
+    private String inputName;
 
     private State state = State.INPUT;
     private Address address;
@@ -295,9 +299,33 @@ public class SendFragment extends Fragment {
                 myDlg = new Dialog(getActivity());
                 myDlg.setContentView(R.layout.fragment_send_save_address);
                 myDlg.show();
+                myDlg.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialogInterface) {
+                        ((BaseWalletActivity) getActivity()).hideKeyboard();
+                    }
+                });
 
                 Button saveBtn = (Button) myDlg.findViewById(R.id.saveButton);
                 EditText nameText = myDlg.findViewById(R.id.inputName);
+
+                nameText.setText(inputName);
+                nameText.addTextChangedListener(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable editable) {
+                        inputName = editable.toString();
+                    }
+                });
 
                 ArrayList<FriendsActivity.Friend> friendList = FriendsActivity.loadFriendList(getActivity());
                 final String newAddress =  sendToAddressView.getText().toString().trim();
@@ -310,8 +338,8 @@ public class SendFragment extends Fragment {
                             FriendsActivity.addFriend(friendList, name, newAddress,
                                     () -> {
                                         Toast.makeText(getActivity(), "Saved to Address Book!", Toast.LENGTH_SHORT).show();
-                                        ((BaseWalletActivity) getActivity()).hideKeyboard();
                                         myDlg.cancel();
+                                        ((BaseWalletActivity) getActivity()).hideKeyboard();
                                     },
                                     () -> {
                                         Toast.makeText(getActivity(), "Invalid Address.", Toast.LENGTH_SHORT).show();

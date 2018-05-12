@@ -98,8 +98,8 @@ public class FriendsActivity extends BaseWalletActivity{
                             addFriend(friendList, nameText.getText().toString().trim(), addressText.getText().toString().trim(),
                                     () -> {
                                         FriendManageAdapter.this.notifyDataSetChanged();
-                                        hideKeyboard();
                                         myDlg.cancel();
+                                        hideKeyboard();
                                         Toast.makeText(FriendsActivity.this, "Saved!", Toast.LENGTH_SHORT).show();
                                     },
                                     () -> {
