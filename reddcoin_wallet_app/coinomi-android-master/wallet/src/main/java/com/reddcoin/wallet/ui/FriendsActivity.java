@@ -95,7 +95,7 @@ public class FriendsActivity extends BaseWalletActivity{
 
                     saveBtn.setOnClickListener(new View.OnClickListener(){
                         public void onClick(View v){
-                            addFriend(friendList, nameText.getText().toString(), addressText.getText().toString(),
+                            addFriend(friendList, nameText.getText().toString().trim(), addressText.getText().toString().trim(),
                                     () -> {
                                         FriendManageAdapter.this.notifyDataSetChanged();
                                         hideKeyboard();
@@ -109,8 +109,6 @@ public class FriendsActivity extends BaseWalletActivity{
                                         Toast.makeText(FriendsActivity.this, "Invalid Address.", Toast.LENGTH_SHORT).show();
                                     },
                                     FriendsActivity.this);
-                            Toast.makeText(FriendsActivity.this, "Saved", Toast.LENGTH_SHORT).show();
-                            myDlg.cancel();
                         }
                     });
 
@@ -291,8 +289,8 @@ public class FriendsActivity extends BaseWalletActivity{
     public void addFriendClick(View view){
         EditText nameText = findViewById(R.id.inputName);
         EditText addressText = findViewById(R.id.inputAddress);
-        String friendName = nameText.getText().toString();
-        String friendAddress = addressText.getText().toString();
+        String friendName = nameText.getText().toString().trim();
+        String friendAddress = addressText.getText().toString().trim();
 
         addFriend(friendList, friendName, friendAddress,
             () -> {

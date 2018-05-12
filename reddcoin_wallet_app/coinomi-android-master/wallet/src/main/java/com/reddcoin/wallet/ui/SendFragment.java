@@ -27,6 +27,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.FilterQueryProvider;
 import android.widget.ImageButton;
 import android.widget.ListAdapter;
@@ -103,6 +104,7 @@ public class SendFragment extends Fragment {
     private Button sendConfirmButton;
 
     private Button selectAddressBtn;
+    private Button saveNewAddressBtn;
     private Dialog myDlg;
 
     private State state = State.INPUT;
@@ -283,6 +285,42 @@ public class SendFragment extends Fragment {
                 listView.setAdapter(adapter);
 
                 myDlg.show();
+            }
+        });
+
+        saveNewAddressBtn = view.findViewById(R.id.save_button);
+        saveNewAddressBtn.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                myDlg = new Dialog(getActivity());
+                myDlg.setContentView(R.layout.fragment_send_save_address);
+                myDlg.show();
+
+                Button saveBtn = (Button) myDlg.findViewById(R.id.saveButton);
+                EditText nameText = myDlg.findViewById(R.id.inputName);
+
+                ArrayList<FriendsActivity.Friend> friendList = FriendsActivity.loadFriendList(getActivity());
+                final String newAddress =  sendToAddressView.getText().toString().trim();
+
+                saveBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        String name = nameText.getText().toString().trim();
+                        if (! name.isEmpty()){
+                            FriendsActivity.addFriend(friendList, name, newAddress,
+                                    () -> {
+                                        Toast.makeText(getActivity(), "Saved to Address Book!", Toast.LENGTH_SHORT).show();
+                                        myDlg.cancel();
+                                    },
+                                    () -> {
+                                        Toast.makeText(getActivity(), "Invalid Address.", Toast.LENGTH_SHORT).show();
+                                    },
+                                    (BaseWalletActivity) getActivity()
+                            );
+                        }
+                    }
+                });
+
             }
         });
 
@@ -582,6 +620,7 @@ public class SendFragment extends Fragment {
                 address = null;
             }
             addressError.setVisibility(View.GONE);
+            if(address != null) saveNewAddressBtn.setEnabled(true);
         } catch (final AddressFormatException x) {
             // could not decode address at all
             if (!isTyping) {
@@ -589,6 +628,7 @@ public class SendFragment extends Fragment {
                 addressError.setText(R.string.address_error);
                 addressError.setVisibility(View.VISIBLE);
             }
+            saveNewAddressBtn.setEnabled(false);
         }
 
         updateView();
