@@ -23,7 +23,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.Socket;
+// import java.net.Socket;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
@@ -69,6 +69,8 @@ public class StratumSSLClient extends ClientBase {
             new ConcurrentHashMap<String, List<SubscribeResult>>();
 
     final private BlockingQueue<BaseMessage> queue = new LinkedBlockingDeque<BaseMessage>();
+
+    private boolean isShutdown;
 
     // public interface SubscribeResult {
     //     public void handle(CallMessage message);
@@ -145,6 +147,7 @@ public class StratumSSLClient extends ClientBase {
         private void readCert(){
             try {
                 // get file in the Internal Storage
+                log.debug(SSLCertPath);
                 FileInputStream fis = new FileInputStream(SSLCertPath);
 
                 // Load CAs from an InputStream
@@ -211,6 +214,7 @@ public class StratumSSLClient extends ClientBase {
 
     @Override
     protected void startUp() {
+        isShutdown = false;
         trustMangaer = new CATrustManager("bla");
 
         for (int i = 0; i < NUM_OF_WORKERS; i++) {
@@ -245,6 +249,12 @@ public class StratumSSLClient extends ClientBase {
 
         String serverMessage;
         while (isRunning() && isConnected()) {
+            if(isShutdown)
+            {
+                triggerShutdown();
+                break;
+            }
+
             try {
                 serverMessage = fromServer.readLine();
             } catch (IOException e) {
@@ -307,6 +317,7 @@ public class StratumSSLClient extends ClientBase {
         log.debug("Finished listening for server replies");
     }
 
+
     @Override
     public boolean isConnected() {
         return socket != null && socket.isConnected() && isRunning();
@@ -315,11 +326,12 @@ public class StratumSSLClient extends ClientBase {
     @Override
     public void disconnect() {
         if (isConnected()) {
-            try {
-                socket.close();
-            } catch (IOException ignore) {
-                
-            }
+            // try {
+            isShutdown = true;
+                // triggerShutdown();
+            // } catch (IOException ignore) {
+            //
+            //}
         }
     }
 
@@ -335,7 +347,8 @@ public class StratumSSLClient extends ClientBase {
         } catch (Exception e) {
             future.setException(e);
             log.error("Error making a call to the server: {}", e.getMessage());
-            triggerShutdown();
+            // triggerShutdown();
+            isShutdown = true;
         }
 
         return future;

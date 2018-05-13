@@ -27,11 +27,15 @@ import com.reddcoin.wallet.ui.FileBrowserActivity;
 
 import static android.app.Activity.RESULT_OK;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Remo Glauser
  */
 public final class ServerSettingsFragment extends Fragment {//implements SharedPreferences.OnSharedPreferenceChangeListener {
+    private static final Logger log = LoggerFactory.getLogger(ServerSettingsFragment.class);
+
     private Activity activity;
     private WalletApplication application;
     private Configuration config;
@@ -39,12 +43,17 @@ public final class ServerSettingsFragment extends Fragment {//implements SharedP
     private final int REQUEST_CODE_PICK_DIR = 1;
     private final int REQUEST_CODE_PICK_FILE = 2;
 
-    SharedPreferences sharedPreferences;
-    EditText addressEdit;
-    EditText portEdit;
-    Button startBrowserButton;
-    EditText certEdit;
-    CheckBox sslBox;
+    private SharedPreferences sharedPreferences;
+    private EditText addressEdit;
+    private EditText portEdit;
+    private Button startBrowserButton;
+    private EditText certEdit;
+    private CheckBox sslBox;
+    private boolean settingsChanged;
+
+    private String[] onCreateSettings;
+    private String[] onCreateSettingsKeys;
+    private EditText[] onCreateSettingsEdit;
 
     public ServerSettingsFragment() {
         // Required empty public constructor
@@ -79,6 +88,18 @@ public final class ServerSettingsFragment extends Fragment {//implements SharedP
 
         certEdit = (EditText) view.findViewById(R.id.ServerCert);
         certEdit.setText(getFileName(serverCert));
+
+        String[] current= {serverAddress,
+                            serverPort};
+        onCreateSettings = current;
+
+        String[] keys = {config.PREFS_KEY_SERVER_ADDRESS,
+                                config.PREFS_KEY_SERVER_PORT};
+        onCreateSettingsKeys = keys;
+
+        EditText[] widgets= {addressEdit,
+                                portEdit};
+        onCreateSettingsEdit = widgets;
 
         startBrowserButton = (Button) view.findViewById(R.id.Browse);
 
@@ -116,15 +137,26 @@ public final class ServerSettingsFragment extends Fragment {//implements SharedP
 
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
-        editor.putString(config.PREFS_KEY_SERVER_ADDRESS, addressEdit.getText().toString());
-        editor.putString(config.PREFS_KEY_SERVER_PORT, portEdit.getText().toString());
+        for(int i=0; i<onCreateSettingsKeys.length; i++){
+            String CurrentSetting = onCreateSettingsEdit[i].getText().toString();
+            if(CurrentSetting != onCreateSettings[i])
+            {
+                editor.putString(onCreateSettingsKeys[i], CurrentSetting);
+                settingsChanged = true;
+            }
+        }
+        if(settingsChanged)
+        {
+            boolean toggle = sharedPreferences.getBoolean(config.PREFS_KEY_SERVER_SETTINGS_CHANGED, false);
+            toggle = !toggle;
+            editor.putBoolean(config.PREFS_KEY_SERVER_SETTINGS_CHANGED, toggle);
+        }
         editor.commit();
-
     }
 
     public void onOpenBrowserClicked(){
         Intent fileExploreIntent = new Intent(
-                FileBrowserActivity.INTENT_ACTION_SELECT_DIR,
+                FileBrowserActivity.INTENT_ACTION_SELECT_FILE,
                 null,
                 getActivity(),
                 FileBrowserActivity.class
@@ -144,6 +176,7 @@ public final class ServerSettingsFragment extends Fragment {//implements SharedP
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(config.PREFS_KEY_USE_SSL, isChecked);
         editor.commit();
+        settingsChanged = true;
 
     }
 
@@ -170,18 +203,21 @@ public final class ServerSettingsFragment extends Fragment {//implements SharedP
                 String newFile = data.getStringExtra(FileBrowserActivity.returnFileParameter);
                 String responseToUser = "updated";
 
-                if(newFile.matches("\\.crt$")){
+                log.error(newFile);
+
+                if(newFile.matches(".*\\.crt$")){
                     certEdit.setText(getFileName(newFile));
                     SharedPreferences.Editor editor = sharedPreferences.edit();
                     editor.putString(config.PREFS_KEY_SERVER_CERT, newFile);
                     editor.commit();
+                    settingsChanged = true;
                     
                 }else{
                     responseToUser = "Invalid file. Must be a *.crt file";
                 }
                 Toast.makeText(
                         getActivity(),
-                        "responseToUser",
+                        responseToUser,
                         Toast.LENGTH_LONG).show();
                 
             } else {//if(resultCode == this.RESULT_OK) {
@@ -198,7 +234,7 @@ public final class ServerSettingsFragment extends Fragment {//implements SharedP
 
     private String getFileName(String filePath){
         int index = filePath.lastIndexOf("/");
-        return filePath.substring(index+1,filePath.length()-1);
+        return filePath.substring(index+1,filePath.length());
     }
 
 }

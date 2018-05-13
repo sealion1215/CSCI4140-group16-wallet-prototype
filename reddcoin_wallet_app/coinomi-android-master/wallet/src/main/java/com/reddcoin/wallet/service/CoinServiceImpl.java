@@ -194,7 +194,7 @@ public class CoinServiceImpl extends Service implements CoinService, SharedPrefe
 
         boolean isSSLClient = sharedPref.getBoolean(config.PREFS_KEY_USE_SSL, false);
         String certPath = sharedPref.getString(config.PREFS_KEY_SERVER_CERT, "");
-        
+        // isSSLClient =false;
         return new ServerClients(servers, wallet, connHelper, isSSLClient, certPath);
     }
 
@@ -276,12 +276,8 @@ public class CoinServiceImpl extends Service implements CoinService, SharedPrefe
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
                                           String key) {
         log.info("MyDebug: SharedPref: preference change listener");
-        if(key == config.PREFS_KEY_SERVER_ADDRESS || 
-            key == config.PREFS_KEY_SERVER_PORT ||
-            key == config.PREFS_KEY_USE_SSL ||
-            key == config.PREFS_KEY_SERVER_CERT) 
+        if(key == config.PREFS_KEY_SERVER_SETTINGS_CHANGED)
         {
-
             Wallet wallet = application.getWallet();
 
             if (wallet != null) {
@@ -311,6 +307,8 @@ public class CoinServiceImpl extends Service implements CoinService, SharedPrefe
     @Override
     public int onStartCommand(final Intent intent, final int flags, final int startId)
     {
+        super.onStartCommand(intent,flags,startId);
+
         log.info("service start command: " + intent
                 + (intent.hasExtra(Intent.EXTRA_ALARM_COUNT) ? " (alarm count: " + intent.getIntExtra(Intent.EXTRA_ALARM_COUNT, 0) + ")" : ""));
 
