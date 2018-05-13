@@ -1,6 +1,6 @@
 #!/bin/bash
 
-download_electrum_server(){
+function download_electrum_server(){
 	echo "Downloading electrum server..."
 	git clone https://github.com/reddcoin-project/reddcoin-electrum-server.git
 	cd "$server_dir/reddcoin-electrum-server"
@@ -8,9 +8,9 @@ download_electrum_server(){
 	sudo apt-get install python-setuptools python-openssl python-leveldb libleveldb-dev
 	sudo easy_install jsonrpclib irc plyvel
 	sudo python "./setup.py" install
-	echo "electrum download finished.\n"
+	echo "electrum download finished."
 }
-create_DB_dir(){
+function create_DB_dir(){
 	echo "Creating database directory..."
 	sudo mkdir -p $electrum_DB_dir
 	sudo chmod 777 -R $electrum_DB_dir
@@ -24,9 +24,10 @@ create_DB_dir(){
 		sudo chmod 666 "./LOCK"
 		cd "../"
 	done
-	echo "db root created.\n"
+	echo "db root created."
+	echo ""
 }
-make_reddconf(){
+function make_reddconf(){
 	echo "Writing reddcoin.conf file..."
 	mkdir -p $reddcoin_conf_dir
 	sudo chmod 777 -R $reddcoin_conf_dir
@@ -48,7 +49,7 @@ make_reddconf(){
 	fi
 	sudo echo "rpcpassword=$rpcpassword" >> "./reddcoin.conf"
 	#test directory
-	sudo echo "datadir=/media/sealion1215/OS/reddcoin/.reddcoin" >> "./reddcoin.conf"
+	#sudo echo "datadir=/media/sealion1215/OS/reddcoin/.reddcoin" >> "./reddcoin.conf"
 	sudo echo "rpcallowip=$rpcallowip" >> "./reddcoin.conf"
 	sudo echo "rpcport=$rpcport" >> "./reddcoin.conf" 
 	sudo echo "daemon=1" >> "./reddcoin.conf"
@@ -64,9 +65,10 @@ make_reddconf(){
 	do
 		input_IP_address
 	done
-	echo "Finish making reddcoin.conf\n"
+	echo "Finish making reddcoin.conf."
+	echo ""
 }
-make_electrumconf(){
+function make_electrumconf(){
 	echo "Creating electrum.conf file..."
 	mkdir -p $electrum_conf_dir
 	cd $electrum_conf_dir
@@ -221,19 +223,21 @@ make_electrumconf(){
 	fi
 	sudo touch "$electrum_logfile_dir"
 	sudo chmod 666 "$electrum_logfile_dir"
-	echo "Finish making electrum.conf\n"
+	echo "Finish making electrum.conf."
+	echo ""
 }
-make_crt_key(){
+function make_crt_key(){
 	cd "$server_dir/reddcoin-electrum-server"
 	openssl genrsa -des3 -passout pass:x -out ./server.pass.key 2048
 	openssl rsa -passin pass:x -in ./server.pass.key -out ./server.key
 	rm ./server.pass.key
 	openssl req -new -key ./server.key -out ./server.csr
 	openssl x509 -req -days 730 -in ./server.csr -signkey ./server.key -out ./server.crt
-	echo "New certificate and its signing key created.\n"
+	echo "New certificate and its signing key created."
+	echo ""
 	cd -
 }
-input_IP_address(){
+function input_IP_address(){
 	read -p "IP Address(default: 209.239.123.108): " rdd_IP_address
 	if [[ -z "$rdd_IP_address" ]]; then
 		rdd_IP_address="default"
@@ -255,7 +259,7 @@ input_IP_address(){
 	fi
 	sudo echo "addnode=$rdd_IP_address:$rdd_IP_port" >> "./reddcoin.conf"
 }
-check_IP(){
+function check_IP(){
 	temp_arg="$1"
 	if [[ ! "$temp_arg" =~ ^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3}) ]]; then
 		echo "Default IP would be used."
@@ -270,7 +274,7 @@ check_IP(){
 	fi
 	return 1
 }
-check_port(){
+function check_port(){
 	temp_arg="$1"
 	if [[ ! "$temp_arg" =~ ^([1-9]{1})([0-9]{0,4}){0,1}$ ]]; then
 		echo "Default port would be used."
@@ -282,12 +286,30 @@ check_port(){
 	fi
 	return 1
 }
-configure_network(){
+function configure_network(){
 	echo "Configuring network settings..."
 	tcp_port_cmd="sudo iptables -t nat -A PREROUTING -p tcp --dport $tcp_port -j DNAT --to $fqdn_IP:$tcp_port"
 	eval $tcp_port_cmd
 	sudo sysctl -w net.ipv4.conf.all.route_localnet=1
-	echo "Configuration finished.\n"
+	echo "Configuration finished."
+	echo ""
+}
+function create_execute_script(){
+	electrum_config="$electrum_conf_dir/electrum.conf"
+	cd "$server_dir/reddcoin-electrum-server"
+	touch "./execute_electrum.sh"
+	echo "#!/bin/bash" > "./execute_electrum.sh"
+	echo "function read_config(){" >> "./execute_electrum.sh"
+    echo "	text=\$1" >> "./execute_electrum.sh"
+    echo "	echo \`grep -e ^$text $electrum_config |awk -F\= '{print $2}' | tail -n 1| tr -d ' '\`" >> "./execute_electrum.sh"
+    echo "}" >> "./execute_electrum.sh"
+	echo "tcp_port=\$(read_config \"stratum_tcp_port\")" >> "./execute_electrum.sh"
+	echo "sudo iptables -t nat -A PREROUTING -p tcp --dport $tcp_port -j DNAT --to $fqdn_IP:$tcp_port" >> "./execute_electrum.sh"
+	echo "sudo sysctl -w net.ipv4.conf.all.route_localnet=1" >> "./execute_electrum.sh"
+	echo "sudo ./electrum-server start" >> "./execute_electrum.sh"
+	sudo chmod 777 "./execute_electrum.sh"
+	echo "Execution script finished."
+	echo ""
 }
 reddcoind_dir="$HOME/Desktop/testDir"
 server_dir="$HOME/Desktop/test1234567"
@@ -336,5 +358,6 @@ download_electrum_server
 create_DB_dir
 make_reddconf
 make_electrumconf
-configure_network
+create_execute_script
+#configure_network
 echo "Installation finished."
