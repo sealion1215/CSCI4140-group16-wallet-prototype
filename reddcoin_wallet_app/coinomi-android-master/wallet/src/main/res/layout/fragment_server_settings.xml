@@ -70,6 +70,42 @@
 
         </RelativeLayout>
 
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/entry_height"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/ServerCert"
+                android:layout_width="196dp"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toStartOf="@+id/Browse"
+                android:layout_weight="1"
+                android:ems="10"
+                android:inputType="text"
+                android:text="Name" />
+
+            <CheckBox
+                android:id="@+id/SSLBox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="30dp"
+                android:text="SSL" />
+
+            <Button
+                android:id="@+id/Browse"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="30dp"
+                android:text="..." />
+
+        </RelativeLayout>
+
     </LinearLayout>
 
 </FrameLayout>

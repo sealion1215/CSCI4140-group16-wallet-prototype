@@ -11,11 +11,21 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.CheckBox;
+import android.content.Intent;
+import android.widget.RadioGroup;
+import android.widget.Toast;
 
 import com.reddcoin.wallet.Configuration;
 import com.reddcoin.wallet.R;
 import com.reddcoin.wallet.WalletApplication;
+
+import com.reddcoin.wallet.ui.FileBrowserActivity;
+
+import static android.app.Activity.RESULT_OK;
 
 
 /**
@@ -25,10 +35,16 @@ public final class ServerSettingsFragment extends Fragment {//implements SharedP
     private Activity activity;
     private WalletApplication application;
     private Configuration config;
+    
+    private final int REQUEST_CODE_PICK_DIR = 1;
+    private final int REQUEST_CODE_PICK_FILE = 2;
 
     SharedPreferences sharedPreferences;
     EditText addressEdit;
     EditText portEdit;
+    Button startBrowserButton;
+    EditText certEdit;
+    CheckBox sslBox;
 
     public ServerSettingsFragment() {
         // Required empty public constructor
@@ -41,14 +57,6 @@ public final class ServerSettingsFragment extends Fragment {//implements SharedP
         super.onCreate(savedInstanceState);
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-
-
-    //     if (preference instanceof ListPreference) {
-    //         ListPreference listPreference = (ListPreference) preference;
-    //         int prefIndex = listPreference.findIndexOfValue(sharedPreferences.getString(key, ""));
-    //         if (prefIndex >= 0) {
-    //             preference.setSummary(listPreference.getEntries()[prefIndex]);       
-
     }
 
     @Override
@@ -60,12 +68,37 @@ public final class ServerSettingsFragment extends Fragment {//implements SharedP
         String serverAddress = sharedPreferences.getString(config.PREFS_KEY_SERVER_ADDRESS, "Set IP or address");
         String serverPort = sharedPreferences.getString(config.PREFS_KEY_SERVER_PORT, "Set port");
 
+        String serverCert = sharedPreferences.getString(config.PREFS_KEY_SERVER_CERT, "/Path to *.crt file");
+        boolean useSSL = sharedPreferences.getBoolean(config.PREFS_KEY_USE_SSL, false);
+
         addressEdit =  (EditText) view.findViewById(R.id.ServerAddress);
         addressEdit.setText(serverAddress);
 
         portEdit =  (EditText) view.findViewById(R.id.ServerPort);
         portEdit.setText(serverPort);
 
+        certEdit = (EditText) view.findViewById(R.id.ServerCert);
+        certEdit.setText(getFileName(serverCert));
+
+        startBrowserButton = (Button) view.findViewById(R.id.Browse);
+
+        startBrowserButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                onOpenBrowserClicked();
+            }
+        });
+
+        sslBox = (CheckBox) view.findViewById(R.id.SSLBox);
+
+        sslBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked){
+                onCheckedChange(isChecked);
+            }
+        });
+
+        sslBox.setChecked(useSSL);
+        startBrowserButton.setEnabled(useSSL);
+        certEdit.setEnabled(useSSL);
 
         return view;
     }
@@ -89,47 +122,83 @@ public final class ServerSettingsFragment extends Fragment {//implements SharedP
 
     }
 
-    // @Override
-    // public void onSharedPreferenceChanged(final SharedPreferences sharedPreferences, final String key) {
-    //     // if (Configuration.PREFS_KEY_EXCHANGE_CURRENCY.equals(key)) {
-    //     //     defaultCurrency = config.getExchangeCurrencyCode();
+    public void onOpenBrowserClicked(){
+        Intent fileExploreIntent = new Intent(
+                FileBrowserActivity.INTENT_ACTION_SELECT_DIR,
+                null,
+                getActivity(),
+                FileBrowserActivity.class
+        );
 
-    //     //     updateView();
-    //     // }
-    // }
+        startActivityForResult(
+                fileExploreIntent,
+                REQUEST_CODE_PICK_FILE
+        );
+    }
 
-    // @Override
-    // public void onResume() {
-    //     super.onResume();
-    //     //unregister the preferenceChange listener
-    //     //getPreferenceScreen().getSharedPreferences()
-    //     //        .registerOnSharedPreferenceChangeListener(this);
-    // }
+    public void onCheckedChange(boolean isChecked){
+        sslBox.setChecked(isChecked);
+        startBrowserButton.setEnabled(isChecked);
+        certEdit.setEnabled(isChecked);
 
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(config.PREFS_KEY_USE_SSL, isChecked);
+        editor.commit();
 
-    // // @Override
-    // // public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-    // //     Preference preference = findPreference(key);
-    // //     if (preference instanceof ListPreference) {
-    // //         ListPreference listPreference = (ListPreference) preference;
-    // //         int prefIndex = listPreference.findIndexOfValue(sharedPreferences.getString(key, ""));
-    // //         if (prefIndex >= 0) {
-    // //             preference.setSummary(listPreference.getEntries()[prefIndex]);
-    // //         }
-    // //     } else if (preference instanceof EditTextPreference){
-    // //         EditTextPreference editText = (EditTextPreference) preference;
-    // //         preference.setSummary(editText.getText());           
-    // //     }else {
-    // //         preference.setSummary(sharedPreferences.getString(key, ""));
+    }
 
-    // //     }
-    // // }
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_CODE_PICK_DIR) {
+            if(resultCode == RESULT_OK) {
+                String newDir = data.getStringExtra(FileBrowserActivity.returnDirectoryParameter);
+                Toast.makeText(
+                        getActivity(),
+                        "Chose *.crt file of the server, not a DIRECTORY",
+                        Toast.LENGTH_LONG).show(); 
+                
+            } else {//if(resultCode == this.RESULT_OK) {
+                Toast.makeText(
+                        getActivity(),
+                        "Received NO result from file browser",
+                        Toast.LENGTH_LONG).show(); 
+            }
+        }
+        
+        if (requestCode == REQUEST_CODE_PICK_FILE) {
+            if(resultCode == RESULT_OK) {
+                String newFile = data.getStringExtra(FileBrowserActivity.returnFileParameter);
+                String responseToUser = "updated";
 
-    // @Override
-    // public void onPause() {
-    //     super.onPause();
-    //     //unregister the preference change listener
-    //     //getPreferenceScreen().getSharedPreferences()
-    //     //        .unregisterOnSharedPreferenceChangeListener(this);
-    // }
+                if(newFile.matches("\\.crt$")){
+                    certEdit.setText(getFileName(newFile));
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putString(config.PREFS_KEY_SERVER_CERT, newFile);
+                    editor.commit();
+                    
+                }else{
+                    responseToUser = "Invalid file. Must be a *.crt file";
+                }
+                Toast.makeText(
+                        getActivity(),
+                        "responseToUser",
+                        Toast.LENGTH_LONG).show();
+                
+            } else {//if(resultCode == this.RESULT_OK) {
+                Toast.makeText(
+                        getActivity(),
+                        "Received NO result from file browser",
+                        Toast.LENGTH_LONG).show(); 
+            }
+        }
+
+        
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    private String getFileName(String filePath){
+        int index = filePath.lastIndexOf("/");
+        return filePath.substring(index+1,filePath.length()-1);
+    }
+
 }

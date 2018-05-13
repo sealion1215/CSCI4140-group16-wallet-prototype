@@ -21,21 +21,26 @@ public class ServerClients {
 
     private HashMap<CoinType, ServerClient> connections;
 
-    public ServerClients(List<CoinAddress> coins, Wallet wallet) {
-        // Supply a dumb ConnectivityHelper that reports that connection is always available
-        this(coins, wallet, new ConnectivityHelper() {
-            @Override
-            public boolean isConnected() {
-                return true;
-            }
-        });
-    }
+    // public ServerClients(List<CoinAddress> coins, Wallet wallet) {
+    //     // Supply a dumb ConnectivityHelper that reports that connection is always available
+    //     this(coins, wallet, new ConnectivityHelper() {
+    //         @Override
+    //         public boolean isConnected() {
+    //             return true;
+    //         }
+    //     });
+    // }
 
-    public ServerClients(List<CoinAddress> coins, Wallet wallet, ConnectivityHelper connectivityHelper) {
+    public ServerClients(List<CoinAddress> coins, 
+                            Wallet wallet, 
+                            ConnectivityHelper connectivityHelper,
+                            boolean isSSL, 
+                            String path) 
+    {
         connections = new HashMap<CoinType, ServerClient>(coins.size());
 
         for (CoinAddress coinAddress : coins) {
-            ServerClient client = new ServerClient(coinAddress, connectivityHelper);
+            ServerClient client = new ServerClient(coinAddress, connectivityHelper, isSSL, path);
             connections.put(coinAddress.getType(), client);
         }
 

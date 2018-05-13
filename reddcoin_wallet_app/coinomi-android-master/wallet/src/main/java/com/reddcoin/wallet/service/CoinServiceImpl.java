@@ -54,8 +54,10 @@ public class CoinServiceImpl extends Service implements CoinService, SharedPrefe
 
     @CheckForNull
     private ServerClients clients;
-
     private String lastAccount;
+
+    private boolean isSSLClient;
+    private String SSLCertPath;
 
 //    private PowerManager.WakeLock wakeLock;
 
@@ -189,8 +191,11 @@ public class CoinServiceImpl extends Service implements CoinService, SharedPrefe
             new CoinAddress(ReddcoinMain.get(),
                     new ServerAddress(address, port))
             );
+
+        boolean isSSLClient = sharedPref.getBoolean(config.PREFS_KEY_USE_SSL, false);
+        String certPath = sharedPref.getString(config.PREFS_KEY_SERVER_CERT, "");
         
-        return new ServerClients(servers, wallet, connHelper);
+        return new ServerClients(servers, wallet, connHelper, isSSLClient, certPath);
     }
 
     private final BroadcastReceiver tickReceiver = new BroadcastReceiver() {
@@ -264,23 +269,6 @@ public class CoinServiceImpl extends Service implements CoinService, SharedPrefe
         registerReceiver(tickReceiver, new IntentFilter(Intent.ACTION_TIME_TICK));
 
         sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-
-        // SharedPreferences.OnSharedPreferenceChangeListener sharedListener = new
-        //                    SharedPreferences.OnSharedPreferenceChangeListener() {
-        //     @Override
-        //     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
-        //                                           String key) {
-        //         log.info("MyDebug: SharedPref: preference change listener");
-        //         Wallet wallet = application.getWallet();
-
-        //         if (wallet != null)
-        //             clients = getServerClients(wallet);
-        //     }
-        // };
-
-        //onSharedPreferenceChanged(sharedPref,config.PREFS_KEY_SERVER_ADDRESS);
-        //onSharedPreferenceChanged(sharedPref,config.PREFS_KEY_SERVER_PORT);
-
         sharedPref.registerOnSharedPreferenceChangeListener(this);
     }
 
@@ -288,7 +276,11 @@ public class CoinServiceImpl extends Service implements CoinService, SharedPrefe
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
                                           String key) {
         log.info("MyDebug: SharedPref: preference change listener");
-        if(key == config.PREFS_KEY_SERVER_ADDRESS || key == config.PREFS_KEY_SERVER_PORT) {
+        if(key == config.PREFS_KEY_SERVER_ADDRESS || 
+            key == config.PREFS_KEY_SERVER_PORT ||
+            key == config.PREFS_KEY_USE_SSL ||
+            key == config.PREFS_KEY_SERVER_CERT) 
+        {
 
             Wallet wallet = application.getWallet();
 
@@ -300,7 +292,7 @@ public class CoinServiceImpl extends Service implements CoinService, SharedPrefe
 
                 serviceRestart.doRestart();
                 clients.resetConnections();
-                clients.ping();
+                // clients.ping();
             }
         }
     }

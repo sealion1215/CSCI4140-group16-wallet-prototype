@@ -1,5 +1,7 @@
 package com.reddcoin.stratumj;
 
+import 	java.lang.Object;
+
 import com.reddcoin.stratumj.messages.BaseMessage;
 import com.reddcoin.stratumj.messages.CallMessage;
 import com.reddcoin.stratumj.messages.MessageException;
@@ -14,11 +16,18 @@ import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.security.KeyStore;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -29,19 +38,27 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicLong;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManagerFactory;
+
 
 /**
  * @author John L. Jegutanis
  */
-public class StratumClient extends ClientBase{
-    private static final Logger log = LoggerFactory.getLogger(StratumClient.class);
+public class StratumSSLClient extends ClientBase {
+    private static final Logger log = LoggerFactory.getLogger(StratumSSLClient.class);
     private final int NUM_OF_WORKERS = 1;
 
     private AtomicLong idCounter = new AtomicLong();
     private ServerAddress serverAddress;
-    private Socket socket;
+    private SSLSocket socket;
+    private String SSLCertPath;
     @VisibleForTesting DataOutputStream toServer;
     BufferedReader fromServer;
+
+    private CATrustManager trustMangaer;
 
     final private ExecutorService pool = Executors.newFixedThreadPool(NUM_OF_WORKERS);
 
@@ -52,6 +69,10 @@ public class StratumClient extends ClientBase{
             new ConcurrentHashMap<String, List<SubscribeResult>>();
 
     final private BlockingQueue<BaseMessage> queue = new LinkedBlockingDeque<BaseMessage>();
+
+    // public interface SubscribeResult {
+    //     public void handle(CallMessage message);
+    // }
 
     private class MessageHandler implements Runnable {
         @Override
@@ -112,28 +133,86 @@ public class StratumClient extends ClientBase{
         }
     }
 
-    public StratumClient(ServerAddress address) {
-        serverAddress = address;
+    private class CATrustManager{
+        String certFile;
+        SSLContext context;
+
+        CATrustManager(String file){
+            certFile = file;
+            readCert();
+        }
+
+        private void readCert(){
+            try {
+                // get file in the Internal Storage
+                FileInputStream fis = new FileInputStream(SSLCertPath);
+
+                // Load CAs from an InputStream
+                // (could be from a resource or ByteArrayInputStream or ...)
+                CertificateFactory cf = CertificateFactory.getInstance("X.509");
+                // From https://www.washington.edu/itconnect/security/ca/load-der.crt
+                InputStream caInput = new BufferedInputStream(fis);
+                Certificate ca = null;
+                try {
+                    ca = cf.generateCertificate(caInput);
+                    System.out.println("ca=" + ((X509Certificate) ca).getSubjectDN());
+                } catch (Exception ex) {
+                } finally {
+                    caInput.close();
+                }
+
+                // Create a KeyStore containing our trusted CAs
+                String keyStoreType = KeyStore.getDefaultType();
+                KeyStore keyStore = KeyStore.getInstance(keyStoreType);
+                keyStore.load(null, null);
+                keyStore.setCertificateEntry("ca", ca);
+
+                // Create a TrustManager that trusts the CAs in our KeyStore
+                String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
+                TrustManagerFactory tmf = TrustManagerFactory.getInstance(tmfAlgorithm);
+                tmf.init(keyStore);
+
+                // Create an SSLContext that uses our TrustManager
+                context = SSLContext.getInstance("TLS");
+                context.init(null, tmf.getTrustManagers(), null);
+            }catch (Exception ex){ex.printStackTrace();log.error(ex.toString());}
+        }
+
+        public SSLSocketFactory getSocketFactory(){
+            return context.getSocketFactory();
+        }
     }
 
-    public StratumClient(String host, int port) {
+    public StratumSSLClient(ServerAddress address, String certPath) {
+        serverAddress = address;
+        SSLCertPath = certPath;
+    }
+
+    public StratumSSLClient(String host, int port, String certPath) {
         serverAddress = new ServerAddress(host, port);
-        log.debug("StratumClient at " + host + ":" + port);
+        log.debug("StratumSSLClient at " + host + ":" + port);
+        SSLCertPath = certPath;
     }
 
     public long getCurrentId() {
         return idCounter.get();
     }
 
-    protected Socket createSocket() throws IOException {
+    protected SSLSocket createSocket() throws IOException {
         ServerAddress address = serverAddress;
-        log.debug("Opening a socket to " + address.getHost() + ":" + address.getPort());
 
-        return new Socket(address.getHost(), address.getPort());
+        SSLSocketFactory factory= trustMangaer.getSocketFactory();
+        SSLSocket sslsocket=(SSLSocket) factory.createSocket(address.getHost(),address.getPort());
+
+        log.debug("Opening a SSLsocket to " + address.getHost() + ":" + address.getPort());
+
+        return sslsocket;
     }
 
     @Override
     protected void startUp() {
+        trustMangaer = new CATrustManager("bla");
+
         for (int i = 0; i < NUM_OF_WORKERS; i++) {
             pool.submit(new MessageHandler());
         }
