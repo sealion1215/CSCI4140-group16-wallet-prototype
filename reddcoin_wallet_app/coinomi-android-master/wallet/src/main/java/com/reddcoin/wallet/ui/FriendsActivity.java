@@ -95,11 +95,11 @@ public class FriendsActivity extends BaseWalletActivity{
 
                     saveBtn.setOnClickListener(new View.OnClickListener(){
                         public void onClick(View v){
-                            addFriend(friendList, nameText.getText().toString(), addressText.getText().toString(),
+                            addFriend(friendList, nameText.getText().toString().trim(), addressText.getText().toString().trim(),
                                     () -> {
                                         FriendManageAdapter.this.notifyDataSetChanged();
-                                        hideKeyboard();
                                         myDlg.cancel();
+                                        hideKeyboard();
                                         Toast.makeText(FriendsActivity.this, "Saved!", Toast.LENGTH_SHORT).show();
                                     },
                                     () -> {
@@ -109,8 +109,6 @@ public class FriendsActivity extends BaseWalletActivity{
                                         Toast.makeText(FriendsActivity.this, "Invalid Address.", Toast.LENGTH_SHORT).show();
                                     },
                                     FriendsActivity.this);
-                            Toast.makeText(FriendsActivity.this, "Saved", Toast.LENGTH_SHORT).show();
-                            myDlg.cancel();
                         }
                     });
 
@@ -265,18 +263,25 @@ public class FriendsActivity extends BaseWalletActivity{
         return arrL;
     }
 
-    private interface Callback{
+    public interface Callback{
         void exec();
     }
 
-    //for public usage
+    public static void addFriend(ArrayList<Friend> friendList, String friendName, String friendAddress, Callback success, Callback invalid, BaseWalletActivity activity, boolean ignoreValidate){
+        addFriend(friendList, friendName, friendAddress, success,  null, invalid, activity, ignoreValidate);
+    }
+
     public static void addFriend(ArrayList<Friend> friendList, String friendName, String friendAddress, Callback success, Callback invalid, BaseWalletActivity activity){
         addFriend(friendList, friendName, friendAddress, success,  null, invalid, activity);
     }
 
     public static void addFriend(ArrayList<Friend> friendList, String friendName, String friendAddress, Callback success, Callback beforePush, Callback invalid, BaseWalletActivity activity){
+        addFriend(friendList, friendName, friendAddress, success,  beforePush, invalid, activity, false);
+    }
+
+    public static void addFriend(ArrayList<Friend> friendList, String friendName, String friendAddress, Callback success, Callback beforePush, Callback invalid, BaseWalletActivity activity, boolean ignoreValidate){
         if (! (friendName.isEmpty() || friendAddress.isEmpty()) ){
-            if(validate(friendAddress, activity)){
+            if(ignoreValidate || validate(friendAddress, activity)){
                 if(beforePush != null)
                     beforePush.exec();
                 if (pushFriendList(friendList, friendName, friendAddress, activity)) {
@@ -291,8 +296,8 @@ public class FriendsActivity extends BaseWalletActivity{
     public void addFriendClick(View view){
         EditText nameText = findViewById(R.id.inputName);
         EditText addressText = findViewById(R.id.inputAddress);
-        String friendName = nameText.getText().toString();
-        String friendAddress = addressText.getText().toString();
+        String friendName = nameText.getText().toString().trim();
+        String friendAddress = addressText.getText().toString().trim();
 
         addFriend(friendList, friendName, friendAddress,
             () -> {

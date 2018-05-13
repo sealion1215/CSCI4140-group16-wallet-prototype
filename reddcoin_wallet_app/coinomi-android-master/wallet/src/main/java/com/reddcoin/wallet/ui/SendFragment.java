@@ -1,9 +1,12 @@
 package com.reddcoin.wallet.ui;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.DataSetObserver;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -22,10 +25,16 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.FilterQueryProvider;
 import android.widget.ImageButton;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -61,6 +70,7 @@ import org.bitcoinj.utils.Threading;
 // import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.annotation.Nullable;
 
@@ -95,6 +105,11 @@ public class SendFragment extends Fragment {
     private TextView amountWarning;
     private ImageButton scanQrCodeButton;
     private Button sendConfirmButton;
+
+    private Button selectAddressBtn;
+    private Button saveNewAddressBtn;
+    private Dialog myDlg;
+    private String inputName;
 
     private State state = State.INPUT;
     private Address address;
@@ -178,6 +193,39 @@ public class SendFragment extends Fragment {
         }
     }
 
+    public class SelectFriendAdapter extends ArrayAdapter<FriendsActivity.Friend> {
+        public SelectFriendAdapter(Context context, ArrayList<FriendsActivity.Friend> list){
+            super(context, 0, list);
+        }
+
+        @Override
+        public View getView(final int position, View convertView, ViewGroup parent){
+            // Get the data item for this position
+            final FriendsActivity.Friend friend = getItem(position);
+            // Check if an existing view is being reused, otherwise inflate the view
+            if (convertView == null) {
+                convertView = LayoutInflater.from(getContext()).inflate(R.layout.activity_friends_item, parent, false);
+            }
+            // Lookup view for data population
+            TextView friendName = (TextView) convertView.findViewById(R.id.friendName);
+//            final Button removeButton = (Button) convertView.findViewById(R.id.removeButton);
+
+            // Populate the data into the template view using the data object
+            friendName.setText(friend.name);
+            friendName.setOnClickListener(new View.OnClickListener() {
+                private String address = friend.address;
+
+                public void onClick(View v) {
+                    sendToAddressView.setText(address);
+                    myDlg.cancel();
+                }
+            });
+
+            // Return the completed view to render on screen
+            return convertView;
+        }
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -225,6 +273,83 @@ public class SendFragment extends Fragment {
                     handleSendConfirm();
                 else
                     requestFocusFirst();
+            }
+        });
+
+        selectAddressBtn = view.findViewById(R.id.address_button);
+        selectAddressBtn.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                ArrayList<FriendsActivity.Friend> friendList = FriendsActivity.loadFriendList(getActivity());
+                myDlg = new Dialog(getActivity());
+                myDlg.setContentView(R.layout.fragment_send_address_list);
+
+                ListView listView = myDlg.findViewById(R.id.friendList);
+                SelectFriendAdapter adapter = new SelectFriendAdapter(getActivity(), friendList);
+                listView.setAdapter(adapter);
+
+                myDlg.show();
+            }
+        });
+
+        saveNewAddressBtn = view.findViewById(R.id.save_button);
+        saveNewAddressBtn.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                myDlg = new Dialog(getActivity());
+                myDlg.setContentView(R.layout.fragment_send_save_address);
+                myDlg.show();
+                myDlg.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialogInterface) {
+                        ((BaseWalletActivity) getActivity()).hideKeyboard();
+                    }
+                });
+
+                Button saveBtn = (Button) myDlg.findViewById(R.id.saveButton);
+                EditText nameText = myDlg.findViewById(R.id.inputName);
+
+                nameText.setText(inputName);
+                nameText.addTextChangedListener(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable editable) {
+                        inputName = editable.toString();
+                    }
+                });
+
+                ArrayList<FriendsActivity.Friend> friendList = FriendsActivity.loadFriendList(getActivity());
+                final String newAddress =  sendToAddressView.getText().toString().trim();
+
+                saveBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        String name = nameText.getText().toString().trim();
+                        if (! name.isEmpty()){
+                            FriendsActivity.addFriend(friendList, name, newAddress,
+                                    () -> {
+                                        Toast.makeText(getActivity(), "Saved to Address Book!", Toast.LENGTH_SHORT).show();
+                                        myDlg.cancel();
+                                        ((BaseWalletActivity) getActivity()).hideKeyboard();
+                                    },
+                                    () -> {
+                                        Toast.makeText(getActivity(), "Invalid Address.", Toast.LENGTH_SHORT).show();
+                                    },
+                                    (BaseWalletActivity) getActivity(), true
+                            );
+                        }
+                    }
+                });
+
             }
         });
 
@@ -524,6 +649,7 @@ public class SendFragment extends Fragment {
                 address = null;
             }
             addressError.setVisibility(View.GONE);
+            if(address != null) saveNewAddressBtn.setEnabled(true);
         } catch (final AddressFormatException x) {
             // could not decode address at all
             if (!isTyping) {
@@ -531,6 +657,7 @@ public class SendFragment extends Fragment {
                 addressError.setText(R.string.address_error);
                 addressError.setVisibility(View.VISIBLE);
             }
+            saveNewAddressBtn.setEnabled(false);
         }
 
         updateView();

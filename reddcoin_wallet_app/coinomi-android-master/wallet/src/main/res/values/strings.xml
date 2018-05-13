@@ -120,7 +120,7 @@
 
     <!-- Send fragment -->
     <string name="send_coins_fragment_receiving_address_label">Pay to</string>
-    <string name="send_coins_fragment_receiving_address_tip">type name or address</string>
+    <string name="send_coins_fragment_receiving_address_tip">type address</string>
     <string name="send_coins_fragment_receiving_address_error">Invalid Bitcoin Address!</string>
     <string name="send_coins_fragment_amount_label">Amount to pay</string>
     <string name="send_coins_fragment_button_send">Send</string>
@@ -298,6 +298,10 @@
     <string name="friend_action_save">Save</string>
     <string name="friend_action_remove">Remove</string>
     <string name="friend_popup_title">Address Detail</string>
+
+    <!--Extented Send-->
+    <string name="send_frag_action_address">Select</string>
+    <string name="send_frag_action_save">Save</string>
 
     <!-- Preferences -->
     <string name="movies_categories_key">categoriesKey</string>

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-download_electrum_server(){
+function download_electrum_server(){
 	echo "Downloading electrum server..."
 	git clone https://github.com/reddcoin-project/reddcoin-electrum-server.git
 	cd "$server_dir/reddcoin-electrum-server"
@@ -10,11 +10,10 @@ download_electrum_server(){
 	sudo python "./setup.py" install
 	echo "electrum download finished."
 }
-create_DB_dir(){
+function create_DB_dir(){
 	echo "Creating database directory..."
 	sudo mkdir -p $electrum_DB_dir
 	sudo chmod 777 -R $electrum_DB_dir
-	echo "electrum_DB_dir: $electrum_DB_dir"
 	cd $electrum_DB_dir
 	subdir=( "./addr" "./hist" "./undo" "./utxo" )
 	for name in "${subdir[@]}"; do
@@ -26,8 +25,9 @@ create_DB_dir(){
 		cd "../"
 	done
 	echo "db root created."
+	echo ""
 }
-make_reddconf(){
+function make_reddconf(){
 	echo "Writing reddcoin.conf file..."
 	mkdir -p $reddcoin_conf_dir
 	sudo chmod 777 -R $reddcoin_conf_dir
@@ -65,9 +65,10 @@ make_reddconf(){
 	do
 		input_IP_address
 	done
-	echo "Finish making reddcoin.conf"
+	echo "Finish making reddcoin.conf."
+	echo ""
 }
-make_electrumconf(){
+function make_electrumconf(){
 	echo "Creating electrum.conf file..."
 	mkdir -p $electrum_conf_dir
 	cd $electrum_conf_dir
@@ -85,11 +86,16 @@ make_electrumconf(){
 		fi
 	done
 	sudo echo "username = $sys_username" >> "./electrum.conf"
-	read -p "Host Address to be reached from outside(default: 127.0.0.1): " fqdn_IP
+	read -p "Host IP Address to be reached from outside(default: 127.0.0.1): " fqdn_IP
 	if [[ -z "$fqdn_IP" ]]; then
 		fqdn_IP="127.0.0.1"
+	else 
+		check_IP $fqdn_IP
+		$valid_IP=$?
+		if [[ $valid_IP == 0 ]]; then
+			fqdn_IP="127.0.0.1"
+		fi
 	fi
-	fqdn_IP="127.0.0.1"
 	sudo echo "host = $fqdn_IP" >> "./electrum.conf"
 	read -p "RPC port(default: 8000): " elect_rpc_port
 	if [[ -z "$elect_rpc_port" ]]; then
@@ -137,7 +143,7 @@ make_electrumconf(){
 	fi
 	sudo echo "stratum_http_port = $http_port" >> "./electrum.conf"
 	read -p "Stratum HTTP SSL port(default: 8082): " http_ssl_port
-	if [[ -z "$http_port" ]]; then
+	if [[ -z "$http_ssl_port" ]]; then
 		http_ssl_port="8082"
 	else 
 		check_port $http_ssl_port
@@ -169,7 +175,7 @@ make_electrumconf(){
 			if [ $crt_prepared == "Y" -o $crt_prepared == "N" ]; then	
 				break
 			else
-				echo "invalid crt_prepared"
+				echo "invalid input"
 			fi
 		fi
 	done
@@ -186,6 +192,8 @@ make_electrumconf(){
 				break
 			fi
 		done
+		crt_location=${crt_location//"~"/$HOME}
+		key_location=${key_location//"~"/$HOME}
 	else
 		make_crt_key
 		crt_location="$server_dir/reddcoin-electrum-server/electrum-server.crt"
@@ -215,9 +223,10 @@ make_electrumconf(){
 	fi
 	sudo touch "$electrum_logfile_dir"
 	sudo chmod 666 "$electrum_logfile_dir"
-	echo "Finish making electrum.conf"
+	echo "Finish making electrum.conf."
+	echo ""
 }
-make_crt_key(){
+function make_crt_key(){
 	cd "$server_dir/reddcoin-electrum-server"
 	openssl genrsa -des3 -passout pass:x -out ./server.pass.key 2048
 	openssl rsa -passin pass:x -in ./server.pass.key -out ./server.key
@@ -225,9 +234,10 @@ make_crt_key(){
 	openssl req -new -key ./server.key -out ./server.csr
 	openssl x509 -req -days 730 -in ./server.csr -signkey ./server.key -out ./server.crt
 	echo "New certificate and its signing key created."
+	echo ""
 	cd -
 }
-input_IP_address(){
+function input_IP_address(){
 	read -p "IP Address(default: 209.239.123.108): " rdd_IP_address
 	if [[ -z "$rdd_IP_address" ]]; then
 		rdd_IP_address="default"
@@ -249,7 +259,7 @@ input_IP_address(){
 	fi
 	sudo echo "addnode=$rdd_IP_address:$rdd_IP_port" >> "./reddcoin.conf"
 }
-check_IP(){
+function check_IP(){
 	temp_arg="$1"
 	if [[ ! "$temp_arg" =~ ^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3}) ]]; then
 		echo "Default IP would be used."
@@ -264,7 +274,7 @@ check_IP(){
 	fi
 	return 1
 }
-check_port(){
+function check_port(){
 	temp_arg="$1"
 	if [[ ! "$temp_arg" =~ ^([1-9]{1})([0-9]{0,4}){0,1}$ ]]; then
 		echo "Default port would be used."
@@ -276,15 +286,30 @@ check_port(){
 	fi
 	return 1
 }
-configure_network(){
+function configure_network(){
 	echo "Configuring network settings..."
-	sudo iptables -t nat -A PREROUTING -p tcp --dport "$elect_rpc_port" -j DNAT --to "$fqdn_IP:$elect_rpc_port"
-	sudo iptables -t nat -A PREROUTING -p tcp --dport "$tcp_port" -j DNAT --to "$fqdn_IP:$tcp_port"
-	sudo iptables -t nat -A PREROUTING -p tcp --dport "$tcp_ssl_port" -j DNAT --to "$fqdn_IP:$tcp_ssl_port"
-	sudo iptables -t nat -A PREROUTING -p tcp --dport "$http_port" -j DNAT --to "$fqdn_IP:$http_port"
-	sudo iptables -t nat -A PREROUTING -p tcp --dport "$http_ssl_port" -j DNAT --to "$fqdn_IP:$http_ssl_port"
+	tcp_port_cmd="sudo iptables -t nat -A PREROUTING -p tcp --dport $tcp_port -j DNAT --to $fqdn_IP:$tcp_port"
+	eval $tcp_port_cmd
 	sudo sysctl -w net.ipv4.conf.all.route_localnet=1
 	echo "Configuration finished."
+	echo ""
+}
+function create_execute_script(){
+	electrum_config="$electrum_conf_dir/electrum.conf"
+	cd "$server_dir/reddcoin-electrum-server"
+	touch "./execute_electrum.sh"
+	echo "#!/bin/bash" > "./execute_electrum.sh"
+	echo "function read_config(){" >> "./execute_electrum.sh"
+    echo "	text=\$1" >> "./execute_electrum.sh"
+    echo "	echo \`grep -e ^$text $electrum_config |awk -F\= '{print $2}' | tail -n 1| tr -d ' '\`" >> "./execute_electrum.sh"
+    echo "}" >> "./execute_electrum.sh"
+	echo "tcp_port=\$(read_config \"stratum_tcp_port\")" >> "./execute_electrum.sh"
+	echo "sudo iptables -t nat -A PREROUTING -p tcp --dport $tcp_port -j DNAT --to $fqdn_IP:$tcp_port" >> "./execute_electrum.sh"
+	echo "sudo sysctl -w net.ipv4.conf.all.route_localnet=1" >> "./execute_electrum.sh"
+	echo "sudo ./electrum-server start" >> "./execute_electrum.sh"
+	sudo chmod 777 "./execute_electrum.sh"
+	echo "Execution script finished."
+	echo ""
 }
 reddcoind_dir="$HOME/Desktop/testDir"
 server_dir="$HOME/Desktop/test1234567"
@@ -308,7 +333,7 @@ tcp_port="50001"
 tcp_ssl_port="50002"
 http_port="8081"
 http_ssl_port="8082"
-echo "Before starting the script, please make sure that the reddcoind server is installed."
+echo "Before starting the script, please make sure that the reddcoind server v1.4.1.0,  v2.0.0.0 or v2.0.1.2 is installed."
 while true; do
 	read -p "reddcoind installed(Y/N): " installed
 	if [[ ! -z "$installed" ]]; then 
@@ -318,7 +343,7 @@ while true; do
 	fi
 done
 if [[ $installed == "N" ]]; then
-	echo "Please install reddcoind server from https://github.com/reddcoin-project/reddcoin/releases/tag/v2.0.0.0"
+	echo "Please install reddcoind server from https://github.com/reddcoin-project/reddcoin/releases/tag/v2.0.1.2"
 	exit
 fi
 read -p "Target Directory(default: $server_dir): " server_dir
@@ -333,5 +358,6 @@ download_electrum_server
 create_DB_dir
 make_reddconf
 make_electrumconf
-configure_network
+create_execute_script
+#configure_network
 echo "Installation finished."

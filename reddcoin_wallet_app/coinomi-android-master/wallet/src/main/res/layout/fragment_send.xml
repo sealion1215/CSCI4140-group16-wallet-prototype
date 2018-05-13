@@ -23,6 +23,7 @@
                 android:layout_height="0dp"
                 android:layout_weight="1"
                 android:gravity="center_vertical">
+
                 <TextView
                     android:id="@+id/pay_to_label"
                     android:layout_width="wrap_content"
@@ -34,52 +35,76 @@
                     android:textColor="@color/gray_54_sec_text_icons" />
 
                 <!-- TODO make android:imeOptions="actionNext" work -->
+                <Button
+                    android:id="@+id/address_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/send_to_address"
+                    android:layout_alignParentEnd="true"
+                    android:minHeight="0dp"
+                    android:minWidth="0dp"
+                    android:text="@string/send_frag_action_address"
+                    android:textSize="12sp" />
+
                 <AutoCompleteTextView
                     android:id="@+id/send_to_address"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
                     style="@style/NormalText"
+                    android:layout_width="232dp"
+                    android:layout_height="wrap_content"
                     android:layout_alignParentLeft="true"
                     android:layout_alignParentStart="true"
                     android:layout_below="@+id/pay_to_label"
+                    android:layout_marginEnd="3dp"
+                    android:layout_marginRight="3dp"
                     android:layout_toLeftOf="@id/scan_qr_code"
                     android:layout_toStartOf="@id/scan_qr_code"
-                    android:imeOptions="actionNext|flagNoExtractUi"
                     android:completionThreshold="1"
                     android:hint="@string/send_coins_fragment_receiving_address_tip"
-                    android:singleLine="true"
-                    android:inputType="textMultiLine|textNoSuggestions" />
+                    android:imeOptions="actionNext|flagNoExtractUi"
+                    android:inputType="textMultiLine|textNoSuggestions"
+                    android:singleLine="true" />
 
                 <!--<AutoCompleteTextView-->
-                    <!--android:id="@+id/send_coins_receiving_address"-->
-                    <!--android:layout_width="match_parent"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--android:layout_marginLeft="@dimen/list_entry_padding_horizontal"-->
-                    <!--android:layout_marginRight="@dimen/list_entry_padding_horizontal"-->
-                    <!--android:completionThreshold="1"-->
-                    <!--android:hint="@string/send_coins_fragment_receiving_address_hint"-->
-                    <!--android:imeOptions="flagNoExtractUi"-->
-                    <!--android:singleLine="true"-->
-                    <!--android:textColor="#000"-->
-                    <!--android:textSize="@dimen/font_size_normal" />-->
+                <!--android:id="@+id/send_coins_receiving_address"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_marginLeft="@dimen/list_entry_padding_horizontal"-->
+                <!--android:layout_marginRight="@dimen/list_entry_padding_horizontal"-->
+                <!--android:completionThreshold="1"-->
+                <!--android:hint="@string/send_coins_fragment_receiving_address_hint"-->
+                <!--android:imeOptions="flagNoExtractUi"-->
+                <!--android:singleLine="true"-->
+                <!--android:textColor="#000"-->
+                <!--android:textSize="@dimen/font_size_normal" />-->
 
                 <TextView
                     android:id="@+id/address_error_message"
                     style="@style/ErrorText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentLeft="true"
-                    android:layout_alignParentStart="true"
+                    android:layout_toRightOf="@id/save_button"
                     android:layout_below="@+id/send_to_address"
                     android:text="@string/address_error" />
+
+                <Button
+                    android:id="@+id/save_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:layout_below="@+id/send_to_address"
+                    android:minHeight="0dp"
+                    android:minWidth="0dp"
+                    android:enabled="false"
+                    android:text="@string/send_frag_action_save"
+                    android:textSize="12sp" />
 
                 <ImageButton
                     android:id="@+id/scan_qr_code"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_alignParentRight="true"
-                    android:layout_alignTop="@+id/send_to_address"
+
+                    android:layout_above="@+id/address_error_message"
+                    android:layout_toStartOf="@+id/address_button"
                     android:contentDescription="@string/scan_qr_code"
                     android:src="@drawable/qr_code" />
 
@@ -89,18 +114,17 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentLeft="true"
                     android:layout_alignParentStart="true"
-                    android:layout_below="@+id/send_to_address"
-                    android:layout_marginTop="@dimen/activity_vertical_margin"
+                    android:layout_below="@+id/save_button"
                     android:text="@string/amount_to_send_label"
                     android:textColor="@color/gray_54_sec_text_icons" />
 
                 <LinearLayout
                     android:id="@+id/amounts"
-                    android:orientation="horizontal"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_below="@+id/amount_to_send_label"
                     android:baselineAligned="false"
-                    android:layout_below="@+id/amount_to_send_label">
+                    android:orientation="horizontal">
 
                     <com.reddcoin.wallet.ui.widget.AmountEditView
                         android:id="@+id/send_coin_amount"
@@ -142,6 +166,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="bottom">
+
                 <Button
                     android:id="@+id/send_confirm"
                     android:layout_width="wrap_content"
