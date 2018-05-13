@@ -14,12 +14,13 @@ public class AboutActivity extends BaseWalletActivity {
 
         setContentView(R.layout.activity_about);
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(false);
+        // getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        // getSupportActionBar().setDisplayShowHomeEnabled(false);
 
         TextView version = (TextView) findViewById(R.id.about_version);
         if (getWalletApplication().packageInfo() != null) {
-            version.setText(getWalletApplication().packageInfo().versionName);
+            version.setText("v2.0");
+            // version.setText(getWalletApplication().packageInfo().versionName);
         } else {
             version.setVisibility(View.INVISIBLE);
         }

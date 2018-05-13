@@ -184,8 +184,9 @@
 
     <!-- About Activity -->
     <string name="title_activity_about">About the Reddcoin Android wallet</string>
-    <string name="app_name_long">Reddcoin Android wallet</string>
-    <string name="about_licence">An open source project\nhttps://github.com/Coinomi/coinomi-android\nSource code licensed under GNU General Public License 3</string>
+    <string name="app_name_long">Reddcoin Wallet Prototype</string>
+    <string name="about_licence">An open source project\nhttps://github.com/sealion1215/CSCI4140-group16-wallet-prototype\nSource code licensed under GNU General Public License 3</string>
+    <string name="about_credits_reddcoin">Uses Reddcoin Coinomi Wallet\nhttps://github.com/Coinomi/coinomi-android</string>
     <string name="about_credits_bitcoinj">Uses Bitcoinj library\nhttp://bitcoinj.github.io/</string>
     <string name="about_credits_electrum">Uses Electrum server software\nhttps://electrum.org/</string>
     <string name="about_credits_schildbach">Influenced by Andreas Schildbach\nhttps://github.com/schildbach/bitcoin-wallet/</string>
@@ -193,7 +194,7 @@
     <string name="about_credits_crypto_icons">Crypto-icons by Chris Shepherd\nhttps://github.com/shphrd/crypto-icons</string>
     <string name="about_credits_font_icons">Font-icons by Daniel Bruce\nhttp://www.entypo.com</string>
     <string name="about_credits_exchange_rates">Exchange rates provided by\nhttp://www.cryptocoincharts.info/\nhttps://bitcoinaverage.com/</string>
-    <string name="about_coinomi_copyright">Reddcoin 2015</string>
+    <string name="about_coinomi_copyright">Student project 2018</string>
 
     <!-- Add Coins -->
     <string name="title_activity_add_coins">Add coins</string>
