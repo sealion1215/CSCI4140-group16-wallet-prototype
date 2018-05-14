@@ -176,4 +176,4 @@
         <activity android:name=".ui.FileBrowserActivity"></activity>
     </application>
 
-</manifest>
+</manifest> 
