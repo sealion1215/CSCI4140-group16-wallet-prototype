@@ -49,7 +49,7 @@ function make_reddconf(){
 	fi
 	sudo echo "rpcpassword=$rpcpassword" >> "./reddcoin.conf"
 	#test directory
-	#sudo echo "datadir=/media/sealion1215/OS/reddcoin/.reddcoin" >> "./reddcoin.conf"
+	sudo echo "datadir=/media/sealion1215/OS/reddcoin/.reddcoin" >> "./reddcoin.conf"
 	sudo echo "rpcallowip=$rpcallowip" >> "./reddcoin.conf"
 	sudo echo "rpcport=$rpcport" >> "./reddcoin.conf" 
 	sudo echo "daemon=1" >> "./reddcoin.conf"
@@ -91,7 +91,7 @@ function make_electrumconf(){
 		fqdn_IP="127.0.0.1"
 	else 
 		check_IP $fqdn_IP
-		$valid_IP=$?
+		valid_IP=$?
 		if [[ $valid_IP == 0 ]]; then
 			fqdn_IP="127.0.0.1"
 		fi
@@ -102,7 +102,7 @@ function make_electrumconf(){
 		elect_rpc_port="8000"
 	else 
 		check_port $elect_rpc_port
-		$valid_port=$?
+		valid_port=$?
 		if [[ $valid_port == 0 ]]; then
 			elect_rpc_port="8000"
 		fi
@@ -114,7 +114,7 @@ function make_electrumconf(){
 		tcp_port="50001"
 	else 
 		check_port $tcp_port
-		$valid_port=$?
+		valid_port=$?
 		if [[ $valid_port == 0 ]]; then
 			tcp_port="50001"
 		fi
@@ -125,7 +125,7 @@ function make_electrumconf(){
 		tcp_ssl_port="50002"
 	else 
 		check_port $tcp_ssl_port
-		$valid_port=$?
+		valid_port=$?
 		if [[ $valid_port == 0 ]]; then
 			tcp_ssl_port="50002"
 		fi
@@ -136,7 +136,7 @@ function make_electrumconf(){
 		http_port="8081"
 	else 
 		check_port $http_port
-		$valid_port=$?
+		valid_port=$?
 		if [[ $valid_port == 0 ]]; then
 			http_port="8081"
 		fi
@@ -147,7 +147,7 @@ function make_electrumconf(){
 		http_ssl_port="8082"
 	else 
 		check_port $http_ssl_port
-		$valid_port=$?
+		valid_port=$?
 		if [[ $valid_port == 0 ]]; then
 			http_ssl_port="8082"
 		fi
