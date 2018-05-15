@@ -692,9 +692,9 @@ public class SendFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.action_empty_wallet:
-                setAmountForEmptyWallet();
-                return true;
+            //case R.id.action_empty_wallet:
+            //    setAmountForEmptyWallet();
+            //    return true;
             default:
                 // Not one of ours. Perform default menu processing
                 return super.onOptionsItemSelected(item);

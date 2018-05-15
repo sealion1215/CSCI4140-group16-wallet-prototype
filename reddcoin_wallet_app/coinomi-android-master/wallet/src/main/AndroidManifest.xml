@@ -169,10 +169,11 @@
             android:name=".service.CoinServiceImpl"
             android:exported="false" />
 
-        <activity android:name=".ui.FriendsActivity"
-            android:label="@string/friend_list_title"
-            ></activity>
-        <activity android:name=".ui.ServerSettingsActivity"></activity>
+        <activity
+            android:name=".ui.FriendsActivity"
+            android:label="@string/friend_list_title" />
+        <activity android:name=".ui.ServerSettingsActivity" />
+        <activity android:name=".ui.FileBrowserActivity"></activity>
     </application>
 
-</manifest>
+</manifest> 

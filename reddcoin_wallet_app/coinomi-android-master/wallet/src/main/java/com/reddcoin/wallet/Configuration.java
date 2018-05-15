@@ -52,6 +52,9 @@ public class Configuration {
 
     public static final String PREFS_KEY_SERVER_ADDRESS = "server_address";
     public static final String PREFS_KEY_SERVER_PORT = "server_port";
+    public static final String PREFS_KEY_SERVER_CERT = "server_certificate";
+    public static final String PREFS_KEY_USE_SSL = "use_ssl";
+    public static final String PREFS_KEY_SERVER_SETTINGS_CHANGED = "server_settings_changed";
 
     private static final int PREFS_DEFAULT_BTC_SHIFT = 3;
     private static final int PREFS_DEFAULT_BTC_PRECISION = 2;

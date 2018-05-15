@@ -271,9 +271,9 @@ public class AddressRequestFragment extends Fragment {
             case R.id.action_copy:
                 UiUtils.copy(getActivity(), receiveAddress.toString());
                 return true;
-            case R.id.action_new_address:
-                createNewAddressDialog.show(getFragmentManager(), null);
-                return true;
+            //case R.id.action_new_address:
+            //    createNewAddressDialog.show(getFragmentManager(), null);
+            //    return true;
             case R.id.action_edit_label:
                 EditAddressBookEntryFragment.edit(getFragmentManager(), type, receiveAddress.toString());
                 return true;
@@ -292,6 +292,7 @@ public class AddressRequestFragment extends Fragment {
     }
 
     DialogFragment createNewAddressDialog = new DialogFragment() {
+
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             Dialog dialog;
@@ -450,3 +451,4 @@ public class AddressRequestFragment extends Fragment {
         }
     };
 }
+

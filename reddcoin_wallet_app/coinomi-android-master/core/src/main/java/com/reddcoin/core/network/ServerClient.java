@@ -4,8 +4,10 @@ import com.reddcoin.core.network.interfaces.BlockchainConnection;
 import com.reddcoin.core.coins.CoinType;
 import com.reddcoin.core.network.interfaces.ConnectionEventListener;
 import com.reddcoin.core.network.interfaces.TransactionEventListener;
+import com.reddcoin.stratumj.ClientBase;
 import com.reddcoin.stratumj.ServerAddress;
 import com.reddcoin.stratumj.StratumClient;
+import com.reddcoin.stratumj.StratumSSLClient;
 import com.reddcoin.stratumj.messages.CallMessage;
 import com.reddcoin.stratumj.messages.ResultMessage;
 import org.bitcoinj.core.Address;
@@ -21,6 +23,7 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.Service;
+import com.google.common.util.concurrent.AbstractExecutionThreadService;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -64,9 +67,13 @@ public class ServerClient implements BlockchainConnection {
     private final ImmutableList<ServerAddress> addresses;
     private final HashSet<ServerAddress> failedAddresses;
     private ServerAddress lastServerAddress;
-    private StratumClient stratumClient;
+    // private StratumSSLClient 
+    private ClientBase stratumClient;
     private long retrySeconds = 0;
     private boolean stopped = false;
+
+    private boolean isSSLClient;
+    private String SSLCertPath;
 
     // TODO, only one is supported at the moment. Change when accounts are supported.
     private transient CopyOnWriteArrayList<ListenerRegistration<ConnectionEventListener>> eventListeners;
@@ -124,12 +131,15 @@ public class ServerClient implements BlockchainConnection {
         }
     };
 
-    public ServerClient(CoinAddress coinAddress, ConnectivityHelper connectivityHelper) {
+    public ServerClient(CoinAddress coinAddress, ConnectivityHelper connectivityHelper, boolean isSSL, String certPath) {
         this.connectivityHelper = connectivityHelper;
         eventListeners = new CopyOnWriteArrayList<ListenerRegistration<ConnectionEventListener>>();
         failedAddresses = new HashSet<ServerAddress>();
         type = coinAddress.getType();
         addresses = ImmutableList.copyOf(coinAddress.getAddresses());
+
+        isSSLClient = isSSL;
+        SSLCertPath = certPath;
 
         createStratumClient();
 
@@ -140,10 +150,15 @@ public class ServerClient implements BlockchainConnection {
         });
     }
 
-    private StratumClient createStratumClient() {
+    private AbstractExecutionThreadService createStratumClient() {
         checkState(stratumClient == null);
         lastServerAddress = getServerAddress();
-        stratumClient = new StratumClient(lastServerAddress);
+        if(isSSLClient){
+            stratumClient = new StratumSSLClient(lastServerAddress, SSLCertPath);
+        }
+        else{
+            stratumClient = new StratumClient(lastServerAddress);
+        }
         stratumClient.addListener(serviceListener, Threading.USER_THREAD);
         return stratumClient;
     }
@@ -290,22 +305,37 @@ public class ServerClient implements BlockchainConnection {
         checkNotNull(stratumClient);
 
         // TODO use TransactionEventListener directly because the current solution leaks memory
-        StratumClient.SubscribeResult blockchainHeaderHandler = new StratumClient.SubscribeResult() {
-            @Override
-            public void handle(CallMessage message) {
-                try {
-                    BlockHeader header = parseBlockHeader(type, message.getParams().getJSONObject(0));
-                    listener.onNewBlock(header);
-                } catch (JSONException e) {
-                    log.error("Unexpected JSON format", e);
-                }
-            }
-        };
-
+        ListenableFuture<ResultMessage> reply;
+        CallMessage callMessage = new CallMessage("blockchain.headers.subscribe", (List)null);
         log.info("Going to subscribe to block chain headers");
 
-        CallMessage callMessage = new CallMessage("blockchain.headers.subscribe", (List)null);
-        ListenableFuture<ResultMessage> reply = stratumClient.subscribe(callMessage, blockchainHeaderHandler);
+        if(isSSLClient){
+            StratumSSLClient.SubscribeResult blockchainHeaderHandler = new StratumSSLClient.SubscribeResult() {    
+                @Override
+                public void handle(CallMessage message) {
+                    try {
+                        BlockHeader header = parseBlockHeader(type, message.getParams().getJSONObject(0));
+                        listener.onNewBlock(header);
+                    } catch (JSONException e) {
+                        log.error("Unexpected JSON format", e);
+                    }
+                }
+            };
+            reply = stratumClient.subscribe(callMessage, blockchainHeaderHandler);
+        }else{
+            StratumClient.SubscribeResult blockchainHeaderHandler = new StratumClient.SubscribeResult() {    
+                @Override
+                public void handle(CallMessage message) {
+                    try {
+                        BlockHeader header = parseBlockHeader(type, message.getParams().getJSONObject(0));
+                        listener.onNewBlock(header);
+                    } catch (JSONException e) {
+                        log.error("Unexpected JSON format", e);
+                    }
+                }
+            };
+            reply = stratumClient.subscribe(callMessage, blockchainHeaderHandler);
+        }
 
         Futures.addCallback(reply, new FutureCallback<ResultMessage>() {
 
@@ -333,56 +363,110 @@ public class ServerClient implements BlockchainConnection {
         CallMessage callMessage = new CallMessage("blockchain.address.subscribe", (List)null);
 
         // TODO use TransactionEventListener directly because the current solution leaks memory
-        StratumClient.SubscribeResult addressHandler = new StratumClient.SubscribeResult() {
-            @Override
-            public void handle(CallMessage message) {
-                try {
-                    Address address = new Address(type, message.getParams().getString(0));
-                    AddressStatus status;
-                    if (message.getParams().isNull(1)) {
-                        status = new AddressStatus(address, null);
-                    }
-                    else {
-                        status = new AddressStatus(address, message.getParams().getString(1));
-                    }
-                    listener.onAddressStatusUpdate(status);
-                } catch (AddressFormatException e) {
-                    log.error("Address subscribe sent a malformed address", e);
-                } catch (JSONException e) {
-                    log.error("Unexpected JSON format", e);
-                }
-            }
-        };
-
-        for (final Address address : addresses) {
-            log.info("Going to subscribe to {}", address);
-            callMessage.setParam(address.toString());
-
-            ListenableFuture<ResultMessage> reply = stratumClient.subscribe(callMessage, addressHandler);
-
-            Futures.addCallback(reply, new FutureCallback<ResultMessage>() {
-
+        if(isSSLClient){
+            StratumSSLClient.SubscribeResult addressHandler = new StratumSSLClient.SubscribeResult() {
                 @Override
-                public void onSuccess(ResultMessage result) {
-                    AddressStatus status = null;
+                public void handle(CallMessage message) {
                     try {
-                        if (result.getResult().isNull(0)) {
+                        Address address = new Address(type, message.getParams().getString(0));
+                        AddressStatus status;
+                        if (message.getParams().isNull(1)) {
                             status = new AddressStatus(address, null);
                         }
                         else {
-                            status = new AddressStatus(address, result.getResult().getString(0));
+                            status = new AddressStatus(address, message.getParams().getString(1));
                         }
                         listener.onAddressStatusUpdate(status);
+                    } catch (AddressFormatException e) {
+                        log.error("Address subscribe sent a malformed address", e);
                     } catch (JSONException e) {
                         log.error("Unexpected JSON format", e);
                     }
                 }
+            };
 
+            for (final Address address : addresses) {
+                log.info("Going to subscribe to {}", address);
+                callMessage.setParam(address.toString());
+
+                ListenableFuture<ResultMessage> reply = stratumClient.subscribe(callMessage, addressHandler);
+
+                Futures.addCallback(reply, new FutureCallback<ResultMessage>() {
+
+                    @Override
+                    public void onSuccess(ResultMessage result) {
+                        AddressStatus status = null;
+                        try {
+                            if (result.getResult().isNull(0)) {
+                                status = new AddressStatus(address, null);
+                            }
+                            else {
+                                status = new AddressStatus(address, result.getResult().getString(0));
+                            }
+                            listener.onAddressStatusUpdate(status);
+                        } catch (JSONException e) {
+                            log.error("Unexpected JSON format", e);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Throwable t) {
+                        log.error("Could not get reply for address subscribe", t);
+                    }
+                }, Threading.USER_THREAD);
+            }
+        }else{
+            StratumClient.SubscribeResult addressHandler = new StratumClient.SubscribeResult() {
                 @Override
-                public void onFailure(Throwable t) {
-                    log.error("Could not get reply for address subscribe", t);
+                public void handle(CallMessage message) {
+                    try {
+                        Address address = new Address(type, message.getParams().getString(0));
+                        AddressStatus status;
+                        if (message.getParams().isNull(1)) {
+                            status = new AddressStatus(address, null);
+                        }
+                        else {
+                            status = new AddressStatus(address, message.getParams().getString(1));
+                        }
+                        listener.onAddressStatusUpdate(status);
+                    } catch (AddressFormatException e) {
+                        log.error("Address subscribe sent a malformed address", e);
+                    } catch (JSONException e) {
+                        log.error("Unexpected JSON format", e);
+                    }
                 }
-            }, Threading.USER_THREAD);
+            };
+
+            for (final Address address : addresses) {
+                log.info("Going to subscribe to {}", address);
+                callMessage.setParam(address.toString());
+
+                ListenableFuture<ResultMessage> reply = stratumClient.subscribe(callMessage, addressHandler);
+
+                Futures.addCallback(reply, new FutureCallback<ResultMessage>() {
+
+                    @Override
+                    public void onSuccess(ResultMessage result) {
+                        AddressStatus status = null;
+                        try {
+                            if (result.getResult().isNull(0)) {
+                                status = new AddressStatus(address, null);
+                            }
+                            else {
+                                status = new AddressStatus(address, result.getResult().getString(0));
+                            }
+                            listener.onAddressStatusUpdate(status);
+                        } catch (JSONException e) {
+                            log.error("Unexpected JSON format", e);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Throwable t) {
+                        log.error("Could not get reply for address subscribe", t);
+                    }
+                }, Threading.USER_THREAD);
+            }            
         }
     }
 

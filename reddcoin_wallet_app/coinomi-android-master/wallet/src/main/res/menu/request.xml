@@ -18,8 +18,8 @@
         android:icon="@drawable/edit_menu"
         app:showAsAction="ifRoom" />
 
-    <item android:id="@+id/action_new_address"
+<!--     <item android:id="@+id/action_new_address"
         android:title="@string/action_new_address"
         android:icon="@drawable/plus_menu"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="ifRoom" /> -->
 </menu>

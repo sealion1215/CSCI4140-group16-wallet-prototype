@@ -65,6 +65,14 @@
             style="@style/NormalText"
             android:autoLink="web"
             android:paddingTop="16dp"
+            android:text="@string/about_credits_reddcoin" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/NormalText"
+            android:autoLink="web"
+            android:paddingTop="16dp"
             android:text="@string/about_credits_bitcoinj" />
 
         <TextView
@@ -115,13 +123,13 @@
             android:paddingTop="16dp"
             android:text="@string/about_credits_exchange_rates" />
 
-        <ImageView
+<!--         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="32dp"
             android:layout_marginBottom="16dp"
             android:src="@drawable/coins_network"
-            android:layout_gravity="center_horizontal" />
+            android:layout_gravity="center_horizontal" /> -->
 
         <TextView
             android:layout_width="wrap_content"
