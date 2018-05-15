@@ -1,5 +1,6 @@
 #!/bin/bash
 #test1123
+#test2345
 function download_electrum_server(){
 	echo "Downloading electrum server..."
 	git clone https://github.com/reddcoin-project/reddcoin-electrum-server.git
