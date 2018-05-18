@@ -1,6 +1,5 @@
 #!/bin/bash
-#test1123
-#test2345
+
 function download_electrum_server(){
 	echo "Downloading electrum server..."
 	git clone https://github.com/reddcoin-project/reddcoin-electrum-server.git
@@ -11,6 +10,7 @@ function download_electrum_server(){
 	sudo python "./setup.py" install
 	echo "electrum download finished."
 }
+
 function create_DB_dir(){
 	echo "Creating database directory..."
 	sudo mkdir -p $electrum_DB_dir
@@ -28,6 +28,7 @@ function create_DB_dir(){
 	echo "db root created."
 	echo ""
 }
+
 function make_reddconf(){
 	echo "Writing reddcoin.conf file..."
 	mkdir -p $reddcoin_conf_dir
@@ -49,8 +50,11 @@ function make_reddconf(){
 		rpcpassword="123456"
 	fi
 	sudo echo "rpcpassword=$rpcpassword" >> "./reddcoin.conf"
-	#test directory
-	sudo echo "datadir=/media/sealion1215/OS/reddcoin/.reddcoin" >> "./reddcoin.conf"
+	read -p "blackchain data directory(default: $reddcoin_db_dir_test)" reddcoin_db_dir
+	if [[ -z "$reddcoin_db_dir"]]; then 
+		reddcoin_db_dir="$reddcoin_db_dir_test"
+	fi
+	sudo echo "datadir=$reddcoin_db_dir" >> "./reddcoin.conf"
 	sudo echo "rpcallowip=$rpcallowip" >> "./reddcoin.conf"
 	sudo echo "rpcport=$rpcport" >> "./reddcoin.conf" 
 	sudo echo "daemon=1" >> "./reddcoin.conf"
@@ -69,6 +73,7 @@ function make_reddconf(){
 	echo "Finish making reddcoin.conf."
 	echo ""
 }
+
 function make_electrumconf(){
 	echo "Creating electrum.conf file..."
 	mkdir -p $electrum_conf_dir
@@ -197,8 +202,8 @@ function make_electrumconf(){
 		key_location=${key_location//"~"/$HOME}
 	else
 		make_crt_key
-		crt_location="$server_dir/reddcoin-electrum-server/electrum-server.crt"
-		key_location="$server_dir/reddcoin-electrum-server/electrum-server.key"
+		crt_location="$server_dir/reddcoin-electrum-server/server.crt"
+		key_location="$server_dir/reddcoin-electrum-server/server.key"
 	fi
 	sudo echo "ssl_certfile = $crt_location" >> "./electrum.conf"
 	sudo echo "ssl_keyfile = $key_location" >> "./electrum.conf"
@@ -227,6 +232,7 @@ function make_electrumconf(){
 	echo "Finish making electrum.conf."
 	echo ""
 }
+
 function make_crt_key(){
 	cd "$server_dir/reddcoin-electrum-server"
 	openssl genrsa -des3 -passout pass:x -out ./server.pass.key 2048
@@ -238,6 +244,7 @@ function make_crt_key(){
 	echo ""
 	cd -
 }
+
 function input_IP_address(){
 	read -p "IP Address(default: 209.239.123.108): " rdd_IP_address
 	if [[ -z "$rdd_IP_address" ]]; then
@@ -260,6 +267,7 @@ function input_IP_address(){
 	fi
 	sudo echo "addnode=$rdd_IP_address:$rdd_IP_port" >> "./reddcoin.conf"
 }
+
 function check_IP(){
 	temp_arg="$1"
 	if [[ ! "$temp_arg" =~ ^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3}) ]]; then
@@ -275,6 +283,7 @@ function check_IP(){
 	fi
 	return 1
 }
+
 function check_port(){
 	temp_arg="$1"
 	if [[ ! "$temp_arg" =~ ^([1-9]{1})([0-9]{0,4}){0,1}$ ]]; then
@@ -287,6 +296,7 @@ function check_port(){
 	fi
 	return 1
 }
+
 function configure_network(){
 	echo "Configuring network settings..."
 	tcp_port_cmd="sudo iptables -t nat -A PREROUTING -p tcp --dport $tcp_port -j DNAT --to $fqdn_IP:$tcp_port"
@@ -295,6 +305,7 @@ function configure_network(){
 	echo "Configuration finished."
 	echo ""
 }
+
 function create_execute_script(){
 	electrum_config="$electrum_conf_dir/electrum.conf"
 	cd "$server_dir/reddcoin-electrum-server"
@@ -304,17 +315,42 @@ function create_execute_script(){
     echo "	text=\$1" >> "./execute_electrum.sh"
     echo "	echo \`grep -e ^$text $electrum_config |awk -F\= '{print $2}' | tail -n 1| tr -d ' '\`" >> "./execute_electrum.sh"
     echo "}" >> "./execute_electrum.sh"
+    echo "host_IP =\$(read_config \"host\")" >> "./execute_electrum.sh"
 	echo "tcp_port=\$(read_config \"stratum_tcp_port\")" >> "./execute_electrum.sh"
-	echo "sudo iptables -t nat -A PREROUTING -p tcp --dport $tcp_port -j DNAT --to $fqdn_IP:$tcp_port" >> "./execute_electrum.sh"
+	echo "tcp_ssl_port=\$(read_config \"stratum_tcp_ssl_port\")" >> "./execute_electrum.sh"
+	echo "http_port=\$(read_config \"stratum_http_port\")" >> "./execute_electrum.sh"
+	echo "http_ssl_port=\$(read_config \"stratum_http_ssl_port\")" >> "./execute_electrum.sh"
+	echo "sudo iptables -t nat -A PREROUTING -p tcp --dport $tcp_port -j DNAT --to $host_IP:$tcp_port" >> "./execute_electrum.sh"
+	echo "sudo iptables -t nat -A PREROUTING -p tcp --dport $tcp_port -j DNAT --to $host_IP:$tcp_ssl_port" >> "./execute_electrum.sh"
+	echo "sudo iptables -t nat -A PREROUTING -p tcp --dport $tcp_port -j DNAT --to $host_IP:$http_port" >> "./execute_electrum.sh"
+	echo "sudo iptables -t nat -A PREROUTING -p tcp --dport $tcp_port -j DNAT --to $host_IP:$http_ssl_port" >> "./execute_electrum.sh"
 	echo "sudo sysctl -w net.ipv4.conf.all.route_localnet=1" >> "./execute_electrum.sh"
-	echo "sudo ./electrum-server start" >> "./execute_electrum.sh"
+	echo "Execution option: " >> "./execute_electrum.sh"
+	echo "1. electrum-server" >> "./execute_electrum.sh"
+	echo "2. run_electrum_server" >> "./execute_electrum.sh"
+	echo "while true; do" >> "./execute_electrum.sh"
+	echo "	read -p \"Script choice(default: 1): \" script_choice" >> "./execute_electrum.sh"
+	echo "	if [[ ! -z \"$script_choice\" ]]; then " >> "./execute_electrum.sh"
+	echo "		if [ $script_choice == \"1\" -o $script_choice == \"2\" ]; then	" >> "./execute_electrum.sh"
+	echo "			break" >> "./execute_electrum.sh"
+	echo "		fi" >> "./execute_electrum.sh"
+	echo "	fi" >> "./execute_electrum.sh"
+	echo "done" >> "./execute_electrum.sh"
+	echo "if [[ $script_choice == \"1\" ]]; then " >> "./execute_electrum.sh"
+	echo "	sudo ./electrum-server start" >> "./execute_electrum.sh"
+	echo "else" >> "./execute_electrum.sh"
+	echo "	./run_electrum_server" >> "./execute_electrum.sh"
+	echo "fi" >> "./execute_electrum.sh"
 	sudo chmod 777 "./execute_electrum.sh"
 	echo "Execution script finished."
-	echo ""
+	
 }
+
 reddcoind_dir="$HOME/Desktop/testDir"
 server_dir="$HOME/Desktop/test1234567"
 reddcoin_conf_dir="$HOME/.reddcoin"
+reddcoin_db_dir=="$HOME/.reddcoin"
+reddcoin_db_dir_test="/media/sealion1215/OS/reddcoin/.reddcoin"
 #reddcoin_conf_dir="$HOME/Desktop/reddcoin2" 
 #electrum_DB_dir="/var/electrum-server-test"
 #electrum_conf_dir="$HOME/Desktop/reddcoin2"
