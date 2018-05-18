@@ -1,0 +1,32 @@
+[server]
+username = sealion1215
+host = 127.0.0.1
+electrum_rpc_port = 8000
+password = 7UWjhHi9LFPNzr64EtNKJu2zAwHUzSg91H5q8K8z8Sjx
+stratum_tcp_port = 50001
+stratum_tcp_ssl_port = 50002
+stratum_http_port = 8081
+stratum_http_ssl_port = 8082
+#report_host = 127.0.0.1
+#report_stratum_tcp_port = 12345
+#report_stratum_tcp_ssl_port = 50002
+#report_stratum_http_port = 8081
+#report_stratum_http_ssl_port = 8082
+banner = Welcome to Electrum!
+banner_file = /etc/electrum.banner
+irc_nick = 127_0_0_1
+irc = yes
+#ssl_certfile = /home/sealion1215/Desktop/test1234567/reddcoin-electrum-server/electrum-server.crt
+#ssl_keyfile = /home/sealion1215/Desktop/test1234567/reddcoin-electrum-server/electrum-server.key
+ssl_certfile = /home/sealion1215/Desktop/remo_cert/server.crt
+ssl_keyfile = /home/sealion1215/Desktop/remo_cert/server.key
+logfile = /var/log/electrum.log
+donation_address = 
+[leveldb]
+path = /var/electrum-server
+pruning_limit = 100
+[reddcoind]
+host = 127.0.0.1
+port = 8332
+user = reddcoinrpc
+password = 7UWjhHi9LFPNzr64EtNKJu2zAwHUzSg91H5q8K8z8Sjx

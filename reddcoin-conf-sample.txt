@@ -1,0 +1,16 @@
+rpcuser=reddcoinrpc
+rpcpassword=7UWjhHi9LFPNzr64EtNKJu2zAwHUzSg91H5q8K8z8Sjx
+datadir=/media/sealion1215/OS/reddcoin/.reddcoin
+rpcallowip=127.0.0.1
+rpcport=8332
+daemon=1
+txindex=1
+staking=0
+addnode=209.239.123.108:45444
+addnode=193.70.47.2:45444
+addnode=92.110.47.168:45444
+addnode=73.22.235.23:45444
+addnode=47.201.37.242:45444
+addnode=174.96.62.139:45444
+addnode=104.236.229.41:45444
+addnode=24.91.26.66:45444
